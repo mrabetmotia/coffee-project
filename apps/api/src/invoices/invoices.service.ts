@@ -115,6 +115,21 @@ export class InvoicesService {
       doc.fillColor(muted).text('Reste', 350, totalsTop + 117);
       doc.fillColor(ink).text(money(toNumber(invoice.sale.remainingAmount)), 445, totalsTop + 117, { width: 88, align: 'right' });
 
+      const stampWidth = 150;
+      const stampHeight = 80;
+      const stampTop = 745 - 20 - stampHeight; // marge de 20 avant la ligne du footer
+      doc.save()
+        .strokeColor(line)
+        .lineWidth(1)
+        .dash(4, { space: 3 })
+        .roundedRect(right - stampWidth, stampTop, stampWidth, stampHeight, 8)
+        .stroke()
+        .undash()
+        .restore();
+      doc.fillColor(muted).fontSize(8).font('Helvetica').text('CACHET ET SIGNATURE', right - stampWidth, stampTop + stampHeight - 20, {
+        width: stampWidth,
+        align: 'center',
+      });
 
       drawRule(745);
       doc.fillColor(muted).fontSize(8).text(`${settings?.companyName ?? 'CaféStock'}  ·  Document officiel`, left, 760);

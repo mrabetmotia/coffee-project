@@ -8,6 +8,7 @@ import { SalesHistoryPage } from '@/pages/sales-history';
 import { SaleDetailPage } from '@/pages/sale-detail';
 import { ReturnsPage, MovementsPage, LowStockPage, CashPage, InvoicesPage } from '@/pages/lists';
 import { ProductsPage, CategoriesPage } from '@/pages/catalog';
+import { ProductDetailPage } from '@/pages/product-detail';
 import { InventoryPage, NewEntryPage, EntriesHistoryPage } from '@/pages/stock-ops';
 import { ClientsPage, ClientDetailPage } from '@/pages/clients';
 import { ReportsPage } from '@/pages/reports';
@@ -26,6 +27,7 @@ export function App() {
             <Route path="/ventes/retours" element={<ReturnsPage />} />
             <Route path="/ventes/:id" element={<SaleDetailPage />} />
             <Route path="/stock/produits" element={<ProductsPage />} />
+            <Route path="/stock/produits/:id" element={<ProductDetailPage />} />
             <Route path="/stock/categories" element={<CategoriesPage />} />
             <Route path="/stock/mouvements" element={<MovementsPage />} />
             <Route path="/stock/faible" element={<LowStockPage />} />

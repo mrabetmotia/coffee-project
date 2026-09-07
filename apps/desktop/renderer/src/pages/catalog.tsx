@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { api } from '@/lib/api';
 import { PageHeader, formatMoney, formatQty } from '@/components/page-header';
@@ -49,7 +50,15 @@ export function ProductsPage() {
   });
   const { data: cats = [] } = useQuery({ queryKey: ['categories'], queryFn: () => api<Category[]>('/categories') });
   const mut = useMutation({
-    mutationFn: () => api('/products', { method: 'POST', body: JSON.stringify({ ...form, barcode: form.barcode || undefined }) }),
+    mutationFn: () =>
+      api('/products', {
+        method: 'POST',
+        body: JSON.stringify({
+          ...form,
+          sku: form.sku || undefined,
+          barcode: form.barcode || undefined,
+        }),
+      }),
     onSuccess: () => {
       toast.success('Produit créé');
       setOpen(false);
@@ -90,7 +99,9 @@ export function ProductsPage() {
           {(data?.items ?? []).map((p) => (
             <tr key={p.id}>
               <Td>
-                {p.name}{' '}
+                <Link className="font-semibold text-primary hover:underline" to={`/stock/produits/${p.id}`}>
+                  {p.name}
+                </Link>{' '}
                 {num(p.currentStock) <= num(p.minimumStock) ? <Badge variant="warning">Stock faible</Badge> : null}
               </Td>
               <Td>{p.sku}</Td>
