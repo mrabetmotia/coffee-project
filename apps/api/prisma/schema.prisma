@@ -1,0 +1,312 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+// SQLite for v1. To migrate to PostgreSQL later: change provider + DATABASE_URL.
+// Do not add SQLite-specific business SQL in services.
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+}
+
+enum PaymentMethod {
+  CASH
+  CHECK
+  TRANSFER
+  OTHER
+}
+
+enum PaymentStatus {
+  UNPAID
+  PARTIAL
+  PAID
+}
+
+enum StockMovementType {
+  ENTRY
+  SALE
+  CUSTOMER_RETURN
+  LOSS
+  ADJUSTMENT
+}
+
+enum CashTransactionType {
+  OPENING
+  SALE_PAYMENT
+  CUSTOMER_PAYMENT
+  REFUND
+}
+
+enum SaleStatus {
+  FINALIZED
+  PARTIALLY_RETURNED
+  RETURNED
+}
+
+model User {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  passwordHash String
+  role         UserRole @default(ADMIN)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Category {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  active    Boolean   @default(true)
+  products  Product[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Product {
+  id            String   @id @default(cuid())
+  name          String
+  sku           String   @unique
+  barcode       String?  @unique
+  categoryId    String
+  category      Category @relation(fields: [categoryId], references: [id])
+  unit          String   @default("pièce")
+  /// Weighted average cost (CMP) — current, not historical
+  purchasePrice Decimal
+  salePrice     Decimal
+  currentStock  Decimal  @default(0)
+  minimumStock  Decimal  @default(0)
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  saleItems        SaleItem[]
+  stockMovements   StockMovement[]
+  stockEntryItems  StockEntryItem[]
+  inventoryLines   InventorySessionItem[]
+  returnItems      SaleReturnItem[]
+
+  @@index([name])
+  @@index([categoryId])
+  @@index([active])
+}
+
+model Client {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String?
+  address   String?
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  sales     Sale[]
+
+  @@index([name])
+  @@index([phone])
+}
+
+model Sale {
+  id              String        @id @default(cuid())
+  invoiceNumber   String        @unique
+  clientId        String?
+  client          Client?       @relation(fields: [clientId], references: [id])
+  status          SaleStatus    @default(FINALIZED)
+  paymentStatus   PaymentStatus @default(UNPAID)
+  subtotal        Decimal
+  discountAmount  Decimal       @default(0)
+  total           Decimal
+  paidAmount      Decimal       @default(0)
+  remainingAmount Decimal
+  costAmount      Decimal
+  profitAmount    Decimal
+  notes           String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  items             SaleItem[]
+  payments          Payment[]
+  invoice           Invoice?
+  cashTransactions  CashTransaction[]
+  returns           SaleReturn[]
+
+  @@index([createdAt])
+  @@index([clientId])
+  @@index([paymentStatus])
+}
+
+model SaleItem {
+  id                String  @id @default(cuid())
+  saleId            String
+  sale              Sale    @relation(fields: [saleId], references: [id])
+  productId         String
+  product           Product @relation(fields: [productId], references: [id])
+  quantity          Decimal
+  returnedQuantity  Decimal @default(0)
+  unitPrice         Decimal
+  /// Snapshot of CMP at sale time — never recalculated
+  unitCost          Decimal
+  lineTotal         Decimal
+  lineCost          Decimal
+  lineProfit        Decimal
+
+  returnItems SaleReturnItem[]
+
+  @@index([saleId])
+  @@index([productId])
+}
+
+model Payment {
+  id        String        @id @default(cuid())
+  saleId    String
+  sale      Sale          @relation(fields: [saleId], references: [id])
+  amount    Decimal
+  method    PaymentMethod
+  notes     String?
+  createdAt DateTime      @default(now())
+
+  cashTransactions CashTransaction[]
+
+  @@index([saleId])
+  @@index([createdAt])
+}
+
+model SaleReturn {
+  id           String   @id @default(cuid())
+  saleId       String
+  sale         Sale     @relation(fields: [saleId], references: [id])
+  refundAmount Decimal  @default(0)
+  reason       String?
+  createdAt    DateTime @default(now())
+  items        SaleReturnItem[]
+
+  @@index([saleId])
+  @@index([createdAt])
+}
+
+model SaleReturnItem {
+  id           String     @id @default(cuid())
+  returnId     String
+  saleReturn   SaleReturn @relation(fields: [returnId], references: [id], onDelete: Cascade)
+  saleItemId   String
+  saleItem     SaleItem   @relation(fields: [saleItemId], references: [id])
+  productId    String
+  product      Product    @relation(fields: [productId], references: [id])
+  quantity     Decimal
+  unitPrice    Decimal
+  unitCost     Decimal
+  lineTotal    Decimal
+  lineProfit   Decimal
+}
+
+model StockMovement {
+  id          String             @id @default(cuid())
+  productId   String
+  product     Product            @relation(fields: [productId], references: [id])
+  type        StockMovementType
+  quantity    Decimal
+  stockBefore Decimal
+  stockAfter  Decimal
+  reason      String?
+  reference   String?
+  createdAt   DateTime           @default(now())
+
+  @@index([productId])
+  @@index([type])
+  @@index([createdAt])
+  @@index([reference])
+}
+
+model StockEntry {
+  id        String           @id @default(cuid())
+  number    String           @unique
+  notes     String?
+  totalCost Decimal          @default(0)
+  createdAt DateTime         @default(now())
+  items     StockEntryItem[]
+
+  @@index([createdAt])
+}
+
+model StockEntryItem {
+  id               String     @id @default(cuid())
+  stockEntryId     String
+  stockEntry       StockEntry @relation(fields: [stockEntryId], references: [id])
+  productId        String
+  product          Product    @relation(fields: [productId], references: [id])
+  quantity         Decimal
+  unitPurchasePrice Decimal
+  lineCost         Decimal
+
+  @@index([stockEntryId])
+  @@index([productId])
+}
+
+model Invoice {
+  id        String   @id @default(cuid())
+  saleId    String   @unique
+  sale      Sale     @relation(fields: [saleId], references: [id])
+  number    String   @unique
+  pdfPath   String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+model CashTransaction {
+  id        String              @id @default(cuid())
+  type      CashTransactionType
+  amount    Decimal
+  method    PaymentMethod       @default(CASH)
+  saleId    String?
+  sale      Sale?               @relation(fields: [saleId], references: [id])
+  paymentId String?
+  payment   Payment?            @relation(fields: [paymentId], references: [id])
+  notes     String?
+  createdAt DateTime            @default(now())
+
+  @@index([createdAt])
+  @@index([type])
+}
+
+model CompanySettings {
+  id                 String   @id
+  companyName        String
+  companyPhone       String?
+  companyAddress     String?
+  currency           String   @default("DT")
+  openingBalance     Decimal  @default(0)
+  autoBackup         Boolean  @default(true)
+  invoiceFooter      String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+/// Portable document numbering (SQLite has no native sequences).
+model DocumentCounter {
+  id         String @id @default(cuid())
+  key        String
+  year       Int
+  lastNumber Int
+
+  @@unique([key, year])
+}
+
+model InventorySession {
+  id        String                  @id @default(cuid())
+  notes     String?
+  createdAt DateTime                @default(now())
+  items     InventorySessionItem[]
+}
+
+model InventorySessionItem {
+  id             String           @id @default(cuid())
+  sessionId      String
+  session        InventorySession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  productId      String
+  product        Product          @relation(fields: [productId], references: [id])
+  systemStock    Decimal
+  physicalStock  Decimal
+  difference     Decimal
+}

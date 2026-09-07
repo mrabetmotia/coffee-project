@@ -1,0 +1,33 @@
+{
+  "name": "cafestock",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Gestion commerciale offline — fournitures et consommables pour cafés",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:api": "npm run start:dev -w @cafestock/api",
+    "dev:desktop": "npm run dev -w @cafestock/desktop",
+    "dev": "concurrently -n api,desktop -c blue,green \"npm run dev:api\" \"npm run dev:desktop\"",
+    "build:shared": "npm run build -w @cafestock/shared",
+    "build:api": "npm run build -w @cafestock/api",
+    "build:desktop": "npm run build -w @cafestock/desktop",
+    "build": "npm run build:shared && npm run build:api && npm run build:desktop",
+    "lint": "npm run lint -w @cafestock/api && npm run lint -w @cafestock/desktop && npm run lint -w @cafestock/shared",
+    "test": "npm run test -w @cafestock/api",
+    "prisma:generate": "npm run prisma:generate -w @cafestock/api",
+    "prisma:migrate": "npm run prisma:migrate -w @cafestock/api",
+    "format": "prettier --write \"**/*.{ts,tsx,json,md,css}\"",
+    "typecheck": "npm run typecheck -w @cafestock/shared && npm run typecheck -w @cafestock/api && npm run typecheck -w @cafestock/desktop"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "prettier": "^3.5.3",
+    "typescript": "^5.8.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
