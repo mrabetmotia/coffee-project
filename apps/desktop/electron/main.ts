@@ -69,6 +69,18 @@ function createWindow(apiPort: number) {
     },
   });
   mainWindow.on('ready-to-show', () => mainWindow?.show());
+  if (!app.isPackaged) {
+    mainWindow.webContents.openDevTools({ mode: 'detach' });
+    mainWindow.webContents.on('console-message', (_event, level, message, line, sourceId) => {
+      console.error(`[renderer:${level}] ${message} (${sourceId}:${line})`);
+    });
+    mainWindow.webContents.on('did-fail-load', (_event, errorCode, errorDescription, validatedURL) => {
+      console.error(`[renderer:load] ${errorCode} ${errorDescription}: ${validatedURL}`);
+    });
+    mainWindow.webContents.on('render-process-gone', (_event, details) => {
+      console.error(`[renderer:gone] ${details.reason} (exit code ${details.exitCode})`);
+    });
+  }
   const apiBaseUrl = `http://127.0.0.1:${apiPort}/api`;
   mainWindow.webContents.once('did-finish-load', () => {
     mainWindow?.webContents.send('api-ready', apiBaseUrl);

@@ -23,7 +23,10 @@ export default defineConfig({
     root: resolve(__dirname, 'renderer'),
     plugins: [react()],
     resolve: {
-      alias: { '@': resolve(__dirname, 'renderer/src') },
+      alias: {
+        '@': resolve(__dirname, 'renderer/src'),
+        '@cafestock/shared': resolve(__dirname, '../../packages/shared/src'),
+      },
     },
     build: {
       rollupOptions: {

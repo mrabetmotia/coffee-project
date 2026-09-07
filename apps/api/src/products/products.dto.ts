@@ -5,9 +5,10 @@ export class CreateProductDto {
   @MinLength(1)
   name!: string;
 
+  @IsOptional()
   @IsString()
   @MinLength(1)
-  sku!: string;
+  sku?: string;
 
   @IsOptional()
   @IsString()

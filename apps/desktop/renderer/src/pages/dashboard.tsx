@@ -5,8 +5,10 @@ import { PageHeader, formatMoney, formatQty } from '@/components/page-header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { num } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { ArrowUpRight, CircleDollarSign, CreditCard, PackageCheck, ShoppingBag, WalletCards } from 'lucide-react';
 
 type Dash = {
   revenue: number;
@@ -31,12 +33,12 @@ export function DashboardPage() {
   });
 
   const kpis = [
-    { label: 'CA', value: formatMoney(data?.revenue ?? 0) },
-    { label: 'Profit', value: formatMoney(data?.profit ?? 0) },
-    { label: 'Ventes', value: String(data?.salesCount ?? 0) },
-    { label: 'Produits vendus', value: formatQty(data?.productsSold ?? 0) },
-    { label: 'Encaissé', value: formatMoney(data?.collected ?? 0) },
-    { label: 'Soldes clients', value: formatMoney(data?.remainingBalances ?? 0) },
+    { label: 'Chiffre d’affaires', value: formatMoney(data?.revenue ?? 0), icon: CircleDollarSign, tone: 'text-primary bg-accent' },
+    { label: 'Profit net', value: formatMoney(data?.profit ?? 0), icon: ArrowUpRight, tone: 'text-emerald-700 bg-emerald-50 dark:text-emerald-300 dark:bg-emerald-950/40' },
+    { label: 'Ventes', value: String(data?.salesCount ?? 0), icon: ShoppingBag, tone: 'text-sky-700 bg-sky-50 dark:text-sky-300 dark:bg-sky-950/40' },
+    { label: 'Produits vendus', value: formatQty(data?.productsSold ?? 0), icon: PackageCheck, tone: 'text-violet-700 bg-violet-50 dark:text-violet-300 dark:bg-violet-950/40' },
+    { label: 'Encaissé', value: formatMoney(data?.collected ?? 0), icon: CreditCard, tone: 'text-amber-700 bg-amber-50 dark:text-amber-300 dark:bg-amber-950/40' },
+    { label: 'Soldes clients', value: formatMoney(data?.remainingBalances ?? 0), icon: WalletCards, tone: 'text-rose-700 bg-rose-50 dark:text-rose-300 dark:bg-rose-950/40' },
   ];
 
   return (
@@ -58,22 +60,21 @@ export function DashboardPage() {
         }
       />
       {isLoading ? <p className="text-sm text-muted-foreground">Chargement…</p> : null}
-      <div className="grid gap-4 md:grid-cols-3 xl:grid-cols-6">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6">
         {kpis.map((k) => (
-          <Card key={k.label}>
-            <CardHeader>
-              <CardTitle className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                {k.label}
-              </CardTitle>
+          <Card key={k.label} className="overflow-hidden">
+            <CardHeader className="pb-2">
+              <div className={cn('flex h-9 w-9 items-center justify-center rounded-xl', k.tone)}><k.icon className="h-4 w-4" /></div>
+              <CardTitle className="text-right text-xs font-medium text-muted-foreground">{k.label}</CardTitle>
             </CardHeader>
-            <CardContent className="text-xl font-semibold">{k.value}</CardContent>
+            <CardContent className="pt-1 text-xl font-semibold tracking-tight">{k.value}</CardContent>
           </Card>
         ))}
       </div>
       <div className="mt-6 grid gap-4 xl:grid-cols-3">
         <Card className="xl:col-span-2">
           <CardHeader>
-            <CardTitle>Ventes et profit</CardTitle>
+            <div><p className="eyebrow mb-1">Performance</p><CardTitle>Ventes et profit</CardTitle></div>
           </CardHeader>
           <CardContent className="h-72">
             <ResponsiveContainer width="100%" height="100%">
@@ -90,16 +91,16 @@ export function DashboardPage() {
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Meilleures ventes</CardTitle>
+            <div><p className="eyebrow mb-1">Top produits</p><CardTitle>Meilleures ventes</CardTitle></div>
           </CardHeader>
           <CardContent className="space-y-2">
             {(data?.bestSellers ?? []).length === 0 ? (
               <p className="text-sm text-muted-foreground">Aucune vente sur la période.</p>
             ) : (
               data?.bestSellers.map((p) => (
-                <div key={p.name} className="flex justify-between text-sm">
-                  <span>{p.name}</span>
-                  <span className="text-muted-foreground">{formatQty(p.qty)}</span>
+                <div key={p.name} className="flex items-center justify-between gap-4 border-b border-border/60 py-2.5 text-sm last:border-0">
+                  <span className="truncate font-medium">{p.name}</span>
+                  <span className="shrink-0 rounded-md bg-muted px-2 py-1 text-xs font-semibold text-muted-foreground">{formatQty(p.qty)}</span>
                 </div>
               ))
             )}
@@ -116,16 +117,17 @@ export function DashboardPage() {
               <p className="text-sm text-muted-foreground">Aucun produit sous seuil.</p>
             ) : (
               data?.lowStock.map((p) => (
-                <div key={p.id} className="flex items-center justify-between text-sm">
-                  <span>{p.name}</span>
+                  <div key={p.id} className="flex items-center justify-between gap-3 border-b border-border/60 py-2.5 text-sm last:border-0">
+                    <span className="truncate font-medium">{p.name}</span>
                   <Badge variant="warning">
                     {formatQty(num(p.currentStock))} / {formatQty(num(p.minimumStock))}
                   </Badge>
                 </div>
               ))
             )}
-            <Link to="/stock/faible" className="text-xs text-primary">
+            <Link to="/stock/faible" className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline">
               Voir tout
+              <ArrowUpRight className="h-3 w-3" />
             </Link>
           </CardContent>
         </Card>

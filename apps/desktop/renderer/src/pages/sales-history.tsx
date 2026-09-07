@@ -24,12 +24,14 @@ type Sale = {
 export function SalesHistoryPage() {
   const [q, setQ] = useState('');
   const [status, setStatus] = useState('');
-  const { data } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ['sales', q, status],
-    queryFn: () =>
-      api<{ items: Sale[] }>(
-        `/sales?q=${encodeURIComponent(q)}&paymentStatus=${status}&take=100`,
-      ),
+    queryFn: () => {
+      const params = new URLSearchParams({ take: '100' });
+      if (q.trim()) params.set('q', q.trim());
+      if (status) params.set('paymentStatus', status);
+      return api<{ items: Sale[] }>(`/sales?${params.toString()}`);
+    },
   });
   const statusVariant = (s: PaymentStatus) =>
     s === 'PAID' ? 'success' : s === 'PARTIAL' ? 'warning' : 'destructive';
@@ -37,7 +39,7 @@ export function SalesHistoryPage() {
   return (
     <div>
       <PageHeader title="Historique des ventes" />
-      <div className="mb-4 flex gap-2">
+      <div className="mb-4 flex flex-col gap-2 sm:flex-row">
         <Input placeholder="N° facture ou client" value={q} onChange={(e) => setQ(e.target.value)} />
         <select className="h-9 rounded-md border bg-background px-2 text-sm" value={status} onChange={(e) => setStatus(e.target.value)}>
           <option value="">Tous les paiements</option>
@@ -60,6 +62,21 @@ export function SalesHistoryPage() {
           </tr>
         </THead>
         <tbody>
+          {isLoading ? (
+            <tr>
+              <Td colSpan={8} className="py-12 text-center text-muted-foreground">Chargement des ventes…</Td>
+            </tr>
+          ) : null}
+          {isError ? (
+            <tr>
+              <Td colSpan={8} className="py-12 text-center text-destructive">Impossible de charger l’historique des ventes.</Td>
+            </tr>
+          ) : null}
+          {!isLoading && !isError && (data?.items ?? []).length === 0 ? (
+            <tr>
+              <Td colSpan={8} className="py-12 text-center text-muted-foreground">Aucune vente trouvée.</Td>
+            </tr>
+          ) : null}
           {(data?.items ?? []).map((s) => (
             <tr key={s.id}>
               <Td>

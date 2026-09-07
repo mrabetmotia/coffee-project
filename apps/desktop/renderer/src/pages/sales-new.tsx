@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { num } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
+import { Barcode, Check, Search, Trash2 } from 'lucide-react';
 
 type Product = {
   id: string;
@@ -100,29 +101,34 @@ export function NewSalePage() {
   const canSubmit = cart.length > 0 && !mutation.isPending;
 
   return (
-    <div className="grid gap-6 xl:grid-cols-[1fr_340px]">
+    <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
       <div>
         <PageHeader title="Nouvelle vente" subtitle="Recherche, douchette, validation rapide" />
-        <Input
-          ref={searchRef}
-          placeholder="Nom, SKU ou code-barres…"
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          onKeyDown={onSearchKey}
-        />
+        <div className="relative">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            ref={searchRef}
+            className="h-12 pl-10 pr-12"
+            placeholder="Nom, SKU ou code-barres…"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            onKeyDown={onSearchKey}
+          />
+          <Barcode className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/60" />
+        </div>
         {results.length > 0 && q ? (
-          <Card className="mt-2">
+          <Card className="mt-2 overflow-hidden">
             <CardContent className="p-0">
               {results.map((p) => (
                 <button
                   key={p.id}
-                  className="flex w-full items-center justify-between border-b px-3 py-2 text-left text-sm last:border-0 hover:bg-accent"
+                  className="flex w-full items-center justify-between gap-4 border-b border-border/70 px-4 py-3 text-left text-sm transition-colors last:border-0 hover:bg-accent"
                   onClick={() => addProduct(p)}
                 >
-                  <span>
-                    {p.name} <span className="text-muted-foreground">· {p.sku}</span>
+                  <span className="min-w-0 truncate font-medium">
+                    {p.name} <span className="font-normal text-muted-foreground">· {p.sku}</span>
                   </span>
-                  <span>
+                  <span className="shrink-0 text-xs text-muted-foreground">
                     {formatMoney(num(p.salePrice))} · stock {formatQty(num(p.currentStock))}
                   </span>
                 </button>
@@ -130,33 +136,35 @@ export function NewSalePage() {
             </CardContent>
           </Card>
         ) : null}
-        <div className="mt-4 overflow-auto rounded-lg border">
+        <div className="mt-5 overflow-auto rounded-xl border border-border/80 bg-card shadow-[0_8px_30px_hsl(var(--foreground)/0.04)]">
           <table className="w-full text-sm">
-            <thead className="bg-muted/60 text-muted-foreground">
+            <thead className="bg-muted/55 text-[11px] uppercase tracking-wider text-muted-foreground">
               <tr>
-                <th className="px-3 py-2 text-left">Produit</th>
-                <th className="px-3 py-2">Qté</th>
-                <th className="px-3 py-2">P.U.</th>
-                <th className="px-3 py-2">Total</th>
+                <th className="px-4 py-3 text-left">Produit</th>
+                <th className="px-4 py-3 text-center">Qté</th>
+                <th className="px-4 py-3 text-center">P.U.</th>
+                <th className="px-4 py-3 text-center">Total</th>
                 <th />
               </tr>
             </thead>
             <tbody>
               {cart.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-3 py-8 text-center text-muted-foreground">
-                    Aucun article. Scannez ou recherchez un produit.
+                    <td colSpan={5} className="px-4 py-16 text-center text-muted-foreground">
+                    <Barcode className="mx-auto mb-3 h-8 w-8 text-primary/50" />
+                    <p className="font-medium text-foreground">Votre panier est vide</p>
+                    <p className="mt-1 text-sm">Scannez ou recherchez un produit pour commencer.</p>
                   </td>
                 </tr>
               ) : (
                 cart.map((l) => (
-                  <tr key={l.product.id} className="border-t">
-                    <td className="px-3 py-2">{l.product.name}</td>
-                    <td className="px-3 py-2">
+                  <tr key={l.product.id} className="border-t border-border/70 transition-colors hover:bg-muted/30">
+                    <td className="max-w-[240px] truncate px-4 py-3 font-medium">{l.product.name}</td>
+                    <td className="px-4 py-3">
                       <Input
                         type="number"
-                        className="h-8 w-20"
-                        min={0.001}
+                        className="h-8 w-20 mx-auto text-center"
+                        min={0}
                         step={1}
                         value={l.quantity}
                         onChange={(e) =>
@@ -168,25 +176,15 @@ export function NewSalePage() {
                         }
                       />
                     </td>
-                    <td className="px-3 py-2">
-                      <Input
-                        type="number"
-                        className="h-8 w-24"
-                        step={0.001}
-                        value={l.unitPrice}
-                        onChange={(e) =>
-                          setCart((prev) =>
-                            prev.map((x) =>
-                              x.product.id === l.product.id ? { ...x, unitPrice: Number(e.target.value) } : x,
-                            ),
-                          )
-                        }
-                      />
+                    <td className="px-4 py-3 text-center text-muted-foreground">
+                      <label>
+                        {formatMoney(l.unitPrice)}
+                      </label>
                     </td>
-                    <td className="px-3 py-2">{formatMoney(l.quantity * l.unitPrice)}</td>
-                    <td className="px-3 py-2">
-                      <Button variant="ghost" size="sm" onClick={() => setCart((p) => p.filter((x) => x.product.id !== l.product.id))}>
-                        Retirer
+                    <td className="px-4 py-3 text-center font-semibold">{formatMoney(l.quantity * l.unitPrice)}</td>
+                    <td className="px-4 py-3">
+                      <Button variant="ghost" size="icon" aria-label="Retirer le produit" onClick={() => setCart((p) => p.filter((x) => x.product.id !== l.product.id))}>
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </td>
                   </tr>
@@ -196,12 +194,13 @@ export function NewSalePage() {
           </table>
         </div>
       </div>
-      <Card className="h-fit">
-        <CardContent className="space-y-3 p-5">
+      <Card className="h-fit xl:sticky xl:top-6">
+        <CardContent className="space-y-4 p-5">
+          <div className="border-b border-border/70 pb-4"><p className="eyebrow mb-1">Récapitulatif</p><p className="text-lg font-semibold tracking-tight">Finaliser la vente</p></div>
           <div>
             <div className="text-sm font-medium">Client</div>
             <select
-              className="mt-1 h-9 w-full rounded-md border bg-background px-2 text-sm"
+              className="mt-1 h-10 w-full rounded-lg border border-input bg-card px-3 text-sm shadow-sm"
               value={clientId}
               onChange={(e) => setClientId(e.target.value)}
             >
@@ -215,14 +214,14 @@ export function NewSalePage() {
           </div>
           <Row label="Sous-total" value={formatMoney(subtotal)} />
           <div>
-            <div className="text-sm">Remise</div>
+            <div className="text-sm font-medium">Remise</div>
             <Input type="number" step={0.001} value={discount} onChange={(e) => setDiscount(Number(e.target.value))} />
           </div>
-          <Row label="Total" value={formatMoney(total)} strong />
+          <div className="rounded-xl bg-accent/60 px-4 py-3"><Row label="Total" value={formatMoney(total)} strong /></div>
           <div>
             <div className="text-sm">Paiement</div>
             <select
-              className="mt-1 h-9 w-full rounded-md border bg-background px-2 text-sm"
+              className="mt-1 h-10 w-full rounded-lg border border-input bg-card px-3 text-sm shadow-sm"
               value={method}
               onChange={(e) => setMethod(e.target.value)}
             >
@@ -233,10 +232,10 @@ export function NewSalePage() {
             </select>
           </div>
           <div>
-            <div className="text-sm">Montant payé</div>
+            <div className="text-sm font-medium">Montant payé</div>
             <Input type="number" step={0.001} value={paid} onChange={(e) => setPaid(Number(e.target.value))} />
             <Button variant="outline" size="sm" className="mt-2" onClick={() => setPaid(total)}>
-              Payer le total
+              <Check className="h-3.5 w-3.5" /> Payer le total
             </Button>
           </div>
           <Row label="Reste" value={formatMoney(remaining)} />

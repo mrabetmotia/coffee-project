@@ -48,41 +48,77 @@ export class InvoicesService {
       const stream = createWriteStream(filePath);
       doc.pipe(stream);
       const currency = settings?.currency ?? 'DT';
-      doc.fontSize(18).text(settings?.companyName ?? 'CaféStock', { align: 'left' });
-      doc.fontSize(10).fillColor('#444');
-      if (settings?.companyAddress) doc.text(settings.companyAddress);
-      if (settings?.companyPhone) doc.text(settings.companyPhone);
-      doc.moveDown();
-      doc.fillColor('#111').fontSize(16).text(`Facture ${invoice.number}`);
-      doc.fontSize(10).text(`Date : ${invoice.sale.createdAt.toLocaleString('fr-TN')}`);
-      doc.text(`Client : ${invoice.sale.client?.name ?? 'Vente comptoir'}`);
-      doc.moveDown();
-      doc.fontSize(10).text('Produit', 48, doc.y, { continued: true, width: 220 });
-      doc.text('Qté', 270, doc.y, { continued: true, width: 60 });
-      doc.text('P.U.', 330, doc.y, { continued: true, width: 90 });
-      doc.text('Total', 420, doc.y);
-      doc.moveTo(48, doc.y + 4).lineTo(547, doc.y + 4).stroke();
-      doc.moveDown();
+      const pageWidth = doc.page.width - doc.page.margins.left - doc.page.margins.right;
+      const left = doc.page.margins.left;
+      const right = left + pageWidth;
+      const teal = '#147d72';
+      const ink = '#172b2b';
+      const muted = '#607474';
+      const light = '#edf6f4';
+      const line = '#d9e6e3';
+      const money = (value: number) => formatMoney(value, currency);
+      const drawRule = (y: number, color = line) => {
+        doc.save().strokeColor(color).lineWidth(0.7).moveTo(left, y).lineTo(right, y).stroke().restore();
+      };
+
+      // Brand header and invoice identity.
+      doc.save().fillColor(teal).roundedRect(left, 42, 42, 42, 10).fill().restore();
+      doc.fillColor('#fff').fontSize(19).font('Helvetica-Bold').text('C', left + 13, 53);
+      doc.fillColor(ink).fontSize(21).font('Helvetica-Bold').text(settings?.companyName ?? 'CaféStock', left + 56, 46);
+      doc.fillColor(muted).fontSize(9).font('Helvetica').text('Gestion commerciale', left + 57, 72);
+      doc.fillColor(teal).fontSize(25).font('Helvetica-Bold').text('FACTURE', 390, 46, { width: right - 390, align: 'right' });
+      doc.fillColor(muted).fontSize(10).font('Helvetica').text(`#${invoice.number}`, 390, 76, { width: right - 390, align: 'right' });
+
+      doc.y = 105;
+      doc.fillColor(muted).fontSize(9).font('Helvetica');
+      if (settings?.companyAddress) doc.text(settings.companyAddress, left, doc.y, { width: 240 });
+      if (settings?.companyPhone) doc.text(settings.companyPhone, left, doc.y, { width: 240 });
+      doc.roundedRect(350, 102, right - 350, 55, 8).fillColor(light).fill();
+      doc.fillColor(muted).fontSize(8).text('DATE D’EMISSION', 365, 114);
+      doc.fillColor(ink).fontSize(10).font('Helvetica-Bold').text(invoice.sale.createdAt.toLocaleDateString('fr-TN'), 365, 128);
+      doc.fillColor(muted).fontSize(8).font('Helvetica').text('CLIENT', 465, 114);
+      doc.fillColor(ink).fontSize(10).font('Helvetica-Bold').text(invoice.sale.client?.name ?? 'Vente comptoir', 465, 128, { width: 68, align: 'right' });
+
+      doc.y = 190;
+      doc.fillColor(ink).fontSize(11).font('Helvetica-Bold').text('Détail de la commande');
+      doc.y += 12;
+      doc.roundedRect(left, doc.y, pageWidth, 28, 6).fillColor(teal).fill();
+      const headerY = doc.y + 9;
+      doc.fillColor('#fff').fontSize(8).font('Helvetica-Bold').text('PRODUIT', left + 14, headerY, { width: 215 });
+      doc.text('QTÉ', 285, headerY, { width: 45, align: 'right' });
+      doc.text('PRIX UNITAIRE', 335, headerY, { width: 85, align: 'right' });
+      doc.text('TOTAL', 445, headerY, { width: 88, align: 'right' });
+      doc.y += 38;
       for (const item of invoice.sale.items) {
         const qty = toNumber(item.quantity) - toNumber(item.returnedQuantity);
         if (qty <= 0) continue;
         const y = doc.y;
-        doc.text(item.product.name, 48, y, { width: 210 });
-        doc.text(formatQty(qty), 270, y, { width: 60 });
-        doc.text(formatMoney(toNumber(item.unitPrice), currency), 330, y, { width: 90 });
-        doc.text(formatMoney(toNumber(item.unitPrice) * qty, currency), 420, y);
-        doc.moveDown();
+        doc.fillColor(ink).fontSize(9.5).font('Helvetica').text(item.product.name, left + 14, y, { width: 215 });
+        doc.fillColor(muted).text(formatQty(qty), 285, y, { width: 45, align: 'right' });
+        doc.text(money(toNumber(item.unitPrice)), 335, y, { width: 85, align: 'right' });
+        doc.fillColor(ink).font('Helvetica-Bold').text(money(toNumber(item.unitPrice) * qty), 445, y, { width: 88, align: 'right' });
+        doc.y = Math.max(y + 26, doc.y + 8);
+        drawRule(doc.y - 5);
       }
-      doc.moveDown();
-      doc.text(`Sous-total : ${formatMoney(toNumber(invoice.sale.subtotal), currency)}`, { align: 'right' });
-      doc.text(`Remise : ${formatMoney(toNumber(invoice.sale.discountAmount), currency)}`, { align: 'right' });
-      doc.fontSize(12).text(`Total : ${formatMoney(toNumber(invoice.sale.total), currency)}`, { align: 'right' });
-      doc.fontSize(10).text(`Payé : ${formatMoney(toNumber(invoice.sale.paidAmount), currency)}`, { align: 'right' });
-      doc.text(`Reste : ${formatMoney(toNumber(invoice.sale.remainingAmount), currency)}`, { align: 'right' });
-      if (settings?.invoiceFooter) {
-        doc.moveDown(2);
-        doc.fontSize(9).fillColor('#666').text(settings.invoiceFooter, { align: 'center' });
-      }
+
+      const totalsTop = doc.y + 24;
+      const boxHeight = 126;
+      doc.roundedRect(330, totalsTop, right - 330, boxHeight, 8).fillColor('#f7faf9').fill();
+      doc.fillColor(muted).fontSize(9).font('Helvetica').text('Sous-total', 350, totalsTop + 18);
+      doc.fillColor(ink).text(money(toNumber(invoice.sale.subtotal)), 445, totalsTop + 18, { width: 88, align: 'right' });
+      doc.fillColor(muted).text('Remise', 350, totalsTop + 39);
+      doc.fillColor(ink).text(money(toNumber(invoice.sale.discountAmount)), 445, totalsTop + 39, { width: 88, align: 'right' });
+      doc.fillColor(teal).fontSize(12).font('Helvetica-Bold').text('Total', 350, totalsTop + 73);
+      doc.text(money(toNumber(invoice.sale.total)), 445, totalsTop + 71, { width: 88, align: 'right' });
+      doc.fillColor(muted).fontSize(9).font('Helvetica').text('Payé', 350, totalsTop + 99);
+      doc.fillColor(ink).text(money(toNumber(invoice.sale.paidAmount)), 445, totalsTop + 99, { width: 88, align: 'right' });
+      doc.fillColor(muted).text('Reste', 350, totalsTop + 117);
+      doc.fillColor(ink).text(money(toNumber(invoice.sale.remainingAmount)), 445, totalsTop + 117, { width: 88, align: 'right' });
+
+
+      drawRule(745);
+      doc.fillColor(muted).fontSize(8).text(`${settings?.companyName ?? 'CaféStock'}  ·  Document officiel`, left, 760);
+      doc.text(invoice.number, 450, 760, { width: 83, align: 'right' });
       doc.end();
       stream.on('finish', resolve);
       stream.on('error', reject);

@@ -1,4 +1,5 @@
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import {
   LayoutDashboard,
   ShoppingCart,
@@ -18,6 +19,10 @@ import {
   Moon,
   Sun,
   LogOut,
+  Menu,
+  X,
+  Store,
+  ArrowLeft,
 } from 'lucide-react';
 import { useTheme } from '@/lib/theme';
 import { setToken } from '@/lib/api';
@@ -60,50 +65,92 @@ const nav = [
 export function AppLayout() {
   const { theme, toggle } = useTheme();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [desktopOpen, setDesktopOpen] = useState(true);
+  const currentLabel = nav
+    .flatMap((item) => ('children' in item ? item.children : [item]))
+    .find((item) => item?.to === location.pathname)?.label ?? 'Espace de travail';
+  const closeMobile = () => setMobileOpen(false);
+  const closeSidebar = () => {
+    setMobileOpen(false);
+    setDesktopOpen(false);
+  };
+  const openSidebar = () => {
+    setMobileOpen(true);
+    setDesktopOpen(true);
+  };
+
+  function logout() {
+    setToken(null);
+    navigate('/login');
+  }
+
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
-      <aside className="flex w-60 shrink-0 flex-col bg-sidebar text-sidebar-foreground">
-        <div className="px-5 py-5">
-          <div className="text-lg font-semibold tracking-tight">CaféStock</div>
-          <div className="text-xs text-sidebar-muted">Fournitures cafés</div>
+    <div className="app-shell flex h-screen overflow-hidden bg-background">
+      {mobileOpen ? <button aria-label="Fermer le menu" className="fixed inset-0 z-30 bg-slate-950/40 lg:hidden" onClick={closeMobile} /> : null}
+      <aside className={cn(
+        'fixed inset-y-0 left-0 z-40 flex w-72 shrink-0 -translate-x-full flex-col bg-sidebar text-sidebar-foreground shadow-2xl transition-all lg:relative lg:w-64 lg:translate-x-0 lg:shadow-none',
+        mobileOpen && 'translate-x-0',
+        !desktopOpen && 'lg:w-0 lg:-translate-x-full lg:overflow-hidden',
+      )}>
+        <div className="flex items-center justify-between px-6 pb-7 pt-6">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-lg shadow-primary/20"><Store className="h-5 w-5" /></div>
+            <div>
+              <div className="text-[17px] font-semibold tracking-tight">CaféStock</div>
+              <div className="text-[11px] text-sidebar-muted">Fournitures cafés</div>
+            </div>
+          </div>
+          <button className="rounded-lg p-2 text-sidebar-muted hover:bg-sidebar-accent hover:text-sidebar-foreground" onClick={closeSidebar} aria-label="Fermer le menu"><LogOut className="h-4 w-4 rotate-180" /></button>
         </div>
-        <nav className="flex-1 space-y-4 overflow-auto px-3 pb-4">
+        <nav className="flex-1 space-y-5 overflow-auto px-4 pb-4">
           {nav.map((item) =>
             'children' in item ? (
               <div key={item.label}>
                 <div className="mb-1 px-2 text-[11px] font-semibold uppercase tracking-wider text-sidebar-muted">
                   {item.label}
                 </div>
-                {item.children.map((child) => (
-                  <Item key={child.to} to={child.to} label={child.label} icon={child.icon} />
+                {item?.children?.map((child) => (
+                  <Item key={child.to} to={child.to} label={child.label} icon={child.icon} onClick={closeMobile} end />
                 ))}
               </div>
             ) : (
-              <Item key={item.to} to={item.to} label={item.label} icon={item.icon} />
+              <Item key={item.to} to={item.to} label={item.label} icon={item.icon} onClick={closeMobile} />
             ),
           )}
         </nav>
+        <div className="border-t border-white/10 px-4 py-4">
+          <div className="flex items-center gap-3 rounded-xl bg-white/5 px-3 py-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20 text-xs font-semibold text-primary">AD</div>
+            <div className="min-w-0 flex-1"><p className="truncate text-sm font-medium">Administrateur</p><p className="truncate text-[11px] text-sidebar-muted">Compte local</p></div>
+            <button onClick={logout} className="rounded-lg p-2 text-sidebar-muted transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground" aria-label="Se déconnecter"><LogOut className="h-4 w-4" /></button>
+          </div>
+        </div>
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex h-14 items-center justify-between border-b px-6">
-          <div className="text-sm text-muted-foreground">Gestion commerciale · hors ligne</div>
+        <header className="flex min-h-16 items-center justify-between border-b border-border/70 bg-card/75 px-4 backdrop-blur-sm sm:px-6">
           <div className="flex items-center gap-2">
-            <button className="rounded-md p-2 hover:bg-accent" onClick={toggle} aria-label="Thème">
+            {!desktopOpen && <button className="rounded-lg p-2 text-muted-foreground hover:bg-muted" onClick={openSidebar} aria-label="Ouvrir le menu"><Menu className="h-5 w-5" /></button>}
+            <button
+              className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              onClick={() => navigate(-1)}
+              aria-label="Retour à la page précédente"
+              title="Retour"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </button>
+            <div><p className="text-sm font-semibold">{currentLabel}</p><p className="hidden text-xs text-muted-foreground sm:block">Gestion commerciale <span className="mx-1">·</span> hors ligne</p></div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button className="rounded-lg p-2.5 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground" onClick={toggle} aria-label="Thème">
               {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </button>
-            <button
-              className="rounded-md p-2 hover:bg-accent"
-              onClick={() => {
-                setToken(null);
-                navigate('/login');
-              }}
-            >
-              <LogOut className="h-4 w-4" />
-            </button>
+            <button className="rounded-lg p-2.5 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground lg:hidden" onClick={logout} aria-label="Se déconnecter"><LogOut className="h-4 w-4" /></button>
           </div>
         </header>
-        <main className="min-h-0 flex-1 overflow-auto p-6">
-          <Outlet />
+        <main className="min-h-0 flex-1 overflow-auto px-4 py-6 sm:px-6 sm:py-8 xl:px-10">
+          <div className="mx-auto w-full max-w-[1600px]"><Outlet /></div>
         </main>
       </div>
     </div>
@@ -114,21 +161,26 @@ function Item({
   to,
   label,
   icon: Icon,
+  onClick,
+  end,
 }: {
   to: string;
   label: string;
   icon: typeof LayoutDashboard;
+  onClick: () => void;
+  end?: boolean;
 }) {
   return (
     <NavLink
       to={to}
-      end={to === '/'}
+      end={end ?? to === '/'}
       className={({ isActive }) =>
         cn(
-          'mb-0.5 flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-sidebar-muted hover:bg-sidebar-accent hover:text-sidebar-foreground',
-          isActive && 'bg-sidebar-accent text-sidebar-foreground',
+          'mb-1 flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] font-medium text-sidebar-muted transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground',
+          isActive && 'bg-sidebar-accent text-sidebar-foreground shadow-sm',
         )
       }
+      onClick={onClick}
     >
       <Icon className="h-4 w-4" />
       {label}

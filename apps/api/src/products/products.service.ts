@@ -1,4 +1,5 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
+import { randomInt } from 'crypto';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.module';
 import { CreateProductDto, UpdateProductDto } from './products.dto';
@@ -13,7 +14,9 @@ export class ProductsService {
   ) {}
 
   async create(dto: CreateProductDto) {
-    await this.ensureUnique(dto.sku, dto.barcode);
+    const sku = dto.sku?.trim() || (await this.generateSku());
+    const barcode = dto.barcode?.trim() || (await this.generateBarcode());
+    await this.ensureUnique(sku, barcode);
     const category = await this.prisma.category.findUnique({ where: { id: dto.categoryId } });
     if (!category) {
       throw new BusinessException('Catégorie introuvable.', HttpStatus.NOT_FOUND, 'CATEGORY_NOT_FOUND');
@@ -23,8 +26,8 @@ export class ProductsService {
       const product = await tx.product.create({
         data: {
           name: dto.name,
-          sku: dto.sku,
-          barcode: dto.barcode || null,
+          sku,
+          barcode,
           categoryId: dto.categoryId,
           unit: dto.unit ?? 'pièce',
           purchasePrice: dto.purchasePrice,
@@ -135,5 +138,24 @@ export class ProductsService {
         throw new BusinessException('Code-barres déjà utilisé.', HttpStatus.CONFLICT, 'DUPLICATE_BARCODE');
       }
     }
+  }
+
+  private async generateSku(): Promise<string> {
+    let sku = '';
+    do {
+      sku = `PRD-${new Date().getFullYear()}-${randomInt(100000, 1000000)}`;
+    } while (await this.prisma.product.findUnique({ where: { sku } }));
+    return sku;
+  }
+
+  private async generateBarcode(): Promise<string> {
+    let barcode = '';
+    do {
+      const base = `200${Date.now().toString().slice(-6)}${randomInt(100, 1000)}`;
+      const digits = base.split('').map(Number);
+      const checksum = (10 - (digits.reduce((sum, digit, index) => sum + digit * (index % 2 === 0 ? 1 : 3), 0) % 10)) % 10;
+      barcode = `${base}${checksum}`;
+    } while (await this.prisma.product.findUnique({ where: { barcode } }));
+    return barcode;
   }
 }

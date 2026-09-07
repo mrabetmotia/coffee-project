@@ -5,6 +5,7 @@ import { api } from '@/lib/api';
 import { PageHeader, formatMoney, formatQty } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, THead, Th, Td } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Modal, ModalContent } from '@/components/ui/modal';
@@ -109,21 +110,22 @@ export function ProductsPage() {
           <Modal.Title className="text-lg font-semibold">Nouveau produit</Modal.Title>
           <div className="mt-4 grid gap-3">
             <Field label="Nom" value={form.name} onChange={(v) => setForm({ ...form, name: v })} />
-            <Field label="SKU" value={form.sku} onChange={(v) => setForm({ ...form, sku: v })} />
-            <Field label="Code-barres" value={form.barcode} onChange={(v) => setForm({ ...form, barcode: v })} />
+            <Field label="SKU (automatique)" value={form.sku} onChange={(v) => setForm({ ...form, sku: v })} placeholder="Généré automatiquement si vide" />
+            <Field label="Code-barres (automatique)" value={form.barcode} onChange={(v) => setForm({ ...form, barcode: v })} placeholder="Généré automatiquement si vide" />
             <div>
               <Label>Catégorie</Label>
-              <select
-                className="mt-1 h-9 w-full rounded-md border bg-background px-2 text-sm"
-                value={form.categoryId}
-                onChange={(e) => setForm({ ...form, categoryId: e.target.value })}
-              >
-                {cats.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
+              <Select value={form.categoryId} onValueChange={(categoryId) => setForm({ ...form, categoryId })}>
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="Choisir une catégorie" />
+                </SelectTrigger>
+                <SelectContent>
+                  {cats.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <Field label="Unité" value={form.unit} onChange={(v) => setForm({ ...form, unit: v })} />
             <Field label="Prix d’achat (CMP initial)" value={String(form.purchasePrice)} onChange={(v) => setForm({ ...form, purchasePrice: Number(v) })} />
@@ -138,11 +140,11 @@ export function ProductsPage() {
   );
 }
 
-function Field({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+function Field({ label, value, onChange, placeholder }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string }) {
   return (
     <div>
       <Label>{label}</Label>
-      <Input className="mt-1" value={value} onChange={(e) => onChange(e.target.value)} />
+      <Input className="mt-1" value={value} placeholder={placeholder} onChange={(e) => onChange(e.target.value)} />
     </div>
   );
 }

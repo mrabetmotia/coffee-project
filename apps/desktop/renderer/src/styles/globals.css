@@ -1,64 +1,99 @@
+@config "../../tailwind.config.js";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 40 20% 99%;
-    --foreground: 222 47% 11%;
+    --background: 210 33% 98%;
+    --foreground: 222 35% 15%;
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card-foreground: 222 35% 15%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
-    --primary: 215 50% 23%;
-    --primary-foreground: 40 20% 98%;
-    --secondary: 40 10% 94%;
-    --secondary-foreground: 222 47% 11%;
-    --muted: 40 10% 95%;
-    --muted-foreground: 215 16% 40%;
-    --accent: 215 32% 91%;
-    --accent-foreground: 215 50% 23%;
-    --destructive: 0 72% 51%;
+    --popover-foreground: 222 35% 15%;
+    --primary: 173 62% 31%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 26% 94%;
+    --secondary-foreground: 222 35% 20%;
+    --muted: 210 26% 95%;
+    --muted-foreground: 215 16% 43%;
+    --accent: 173 42% 92%;
+    --accent-foreground: 173 62% 25%;
+    --destructive: 0 68% 50%;
     --destructive-foreground: 0 0% 100%;
-    --border: 40 12% 88%;
-    --input: 40 12% 88%;
-    --ring: 215 50% 23%;
-    --radius: 0.65rem;
-    --sidebar: 222 28% 12%;
-    --sidebar-foreground: 40 20% 96%;
-    --sidebar-muted: 215 16% 65%;
-    --sidebar-accent: 215 32% 20%;
+    --border: 214 22% 87%;
+    --input: 214 22% 84%;
+    --ring: 173 62% 31%;
+    --radius: 0.75rem;
+    --sidebar: 222 35% 13%;
+    --sidebar-foreground: 210 30% 96%;
+    --sidebar-muted: 215 16% 67%;
+    --sidebar-accent: 173 35% 23%;
   }
   .dark {
-    --background: 222 28% 8%;
-    --foreground: 40 20% 96%;
-    --card: 222 24% 11%;
-    --card-foreground: 40 20% 96%;
-    --popover: 222 24% 11%;
-    --popover-foreground: 40 20% 96%;
-    --primary: 210 60% 72%;
-    --primary-foreground: 222 47% 11%;
-    --secondary: 222 16% 16%;
-    --secondary-foreground: 40 20% 96%;
-    --muted: 222 16% 16%;
-    --muted-foreground: 215 12% 65%;
-    --accent: 222 16% 18%;
-    --accent-foreground: 40 20% 96%;
+    --background: 222 30% 9%;
+    --foreground: 210 30% 96%;
+    --card: 222 25% 12%;
+    --card-foreground: 210 30% 96%;
+    --popover: 222 25% 12%;
+    --popover-foreground: 210 30% 96%;
+    --primary: 173 52% 54%;
+    --primary-foreground: 222 35% 10%;
+    --secondary: 222 18% 17%;
+    --secondary-foreground: 210 30% 96%;
+    --muted: 222 18% 16%;
+    --muted-foreground: 215 12% 68%;
+    --accent: 173 25% 20%;
+    --accent-foreground: 173 52% 72%;
     --destructive: 0 62% 45%;
     --destructive-foreground: 0 0% 100%;
-    --border: 222 16% 18%;
-    --input: 222 16% 18%;
-    --ring: 210 60% 72%;
-    --sidebar: 222 32% 7%;
-    --sidebar-foreground: 40 20% 96%;
-    --sidebar-muted: 215 12% 60%;
-    --sidebar-accent: 215 28% 16%;
+    --border: 222 17% 22%;
+    --input: 222 17% 24%;
+    --ring: 173 52% 54%;
+    --sidebar: 222 38% 8%;
+    --sidebar-foreground: 210 30% 96%;
+    --sidebar-muted: 215 12% 64%;
+    --sidebar-accent: 173 25% 18%;
   }
   * {
     @apply border-border;
   }
   body {
     @apply bg-background text-foreground antialiased;
+    font-family: 'Avenir Next', 'Segoe UI', sans-serif;
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    letter-spacing: -0.01em;
+  }
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
+  select {
+    @apply rounded-lg border border-input bg-card px-3 text-sm shadow-sm transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring/30;
+  }
+  input[type='checkbox'] {
+    accent-color: hsl(var(--primary));
+  }
+  ::selection {
+    background: hsl(var(--primary) / 0.18);
+  }
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--foreground) / 0.16);
+    border-radius: 999px;
+  }
+}
+
+@layer components {
+  .app-shell {
+    background-image: radial-gradient(circle at 85% -10%, hsl(var(--primary) / 0.08), transparent 28rem);
+  }
+  .eyebrow {
+    @apply text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground;
   }
 }
