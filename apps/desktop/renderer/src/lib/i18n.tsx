@@ -1,0 +1,545 @@
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+
+type Language = 'fr' | 'en' | 'ar' | 'de' | 'it' | 'tr';
+type Dictionary = Record<string, string>;
+
+const translations: Record<Language, Dictionary> = {
+  fr: {},
+
+  en: {
+    Dashboard: 'Dashboard',
+    Ventes: 'Sales',
+    'Nouvelle vente': 'New sale',
+    Historique: 'History',
+    Retours: 'Returns',
+    Stock: 'Inventory',
+    Produits: 'Products',
+    Catégories: 'Categories',
+    Mouvements: 'Movements',
+    'Stock faible': 'Low stock',
+    Inventaire: 'Stock count',
+    'Entrées Stock': 'Stock entries',
+    'Nouvelle entrée': 'New entry',
+    Clients: 'Customers',
+    Caisse: 'Cash register',
+    Rapports: 'Reports',
+    Factures: 'Invoices',
+    Paramètres: 'Settings',
+    'Fournitures cafés': 'Coffee supplies',
+    'Gestion commerciale': 'Business management',
+    'hors ligne': 'offline',
+    Retour: 'Back',
+    Thème: 'Theme',
+    'Se déconnecter': 'Sign out',
+    'Ouvrir le menu': 'Open menu',
+    'Fermer le menu': 'Close menu',
+    'Espace de travail': 'Workspace',
+    'Nouveau produit': 'New product',
+    'Rechercher…': 'Search…',
+    Nom: 'Name',
+    Catégorie: 'Category',
+    Unité: 'Unit',
+    'Prix de vente': 'Sale price',
+    'Prix d’achat': 'Purchase price',
+    'Stock actuel': 'Current stock',
+    'Stock minimum': 'Minimum stock',
+    Actif: 'Active',
+    Inactif: 'Inactive',
+    'Informations produit': 'Product information',
+    'Détails et références': 'Details and references',
+    'Code-barres': 'Barcode',
+    'Unité de vente': 'Sales unit',
+    Suivi: 'Tracking',
+    'Dates importantes': 'Important dates',
+    'Créé le': 'Created',
+    'Dernière mise à jour': 'Last updated',
+    'Stock à surveiller': 'Stock needs attention',
+    'Stock disponible': 'Stock available',
+    'Chargement du produit…': 'Loading product…',
+    'Impossible de charger ce produit.': 'Unable to load this product.',
+    'Nom du produit': 'Product name',
+    'Non renseigné': 'Not provided',
+    Statut: 'Status',
+    'Produit actif': 'Active product',
+    'Produit inactif': 'Inactive product',
+    'Le stock actuel est inférieur ou égal au seuil minimum.':
+      'Current stock is at or below the minimum threshold.',
+    'Le stock actuel est supérieur au seuil minimum.':
+      'Current stock is above the minimum threshold.',
+    'Historique des ventes': 'Sales history',
+    'Vue d’ensemble de l’activité': 'Overview of business activity',
+    'Détail de la vente': 'Sale details',
+    'Historique des entrées': 'Stock entry history',
+    'Mouvements de stock': 'Stock movements',
+    'Détail client': 'Customer details',
+    'Nouveau client': 'New customer',
+    Téléphone: 'Phone',
+    Adresse: 'Address',
+    Reste: 'Remaining',
+    Profit: 'Profit',
+    'Tous les paiements': 'All payments',
+    Payé: 'Paid',
+    Partiel: 'Partial',
+    Impayé: 'Unpaid',
+    Facture: 'Invoice',
+    Date: 'Date',
+    Client: 'Customer',
+    Total: 'Total',
+    'Vente comptoir': 'Counter sale',
+    Espèces: 'Cash',
+    Chèque: 'Cheque',
+    Virement: 'Bank transfer',
+    Autre: 'Other',
+    Enregistrer: 'Save',
+    Ajouter: 'Add',
+    Supprimer: 'Delete',
+    Désactiver: 'Disable',
+    Activer: 'Enable',
+    Valider: 'Confirm',
+    'Valider la vente': 'Confirm sale',
+    'Payer le total': 'Pay total',
+    Remise: 'Discount',
+    Paiement: 'Payment',
+    'Montant payé': 'Amount paid',
+    'Sous-total': 'Subtotal',
+    'Aucun article. Scannez ou recherchez un produit.':
+      'No items. Scan or search for a product.',
+    'Votre panier est vide': 'Your cart is empty',
+    'Recherche, douchette, validation rapide':
+      'Search, scan, quick checkout',
+    'Ventes et profit': 'Sales and profit',
+    'Meilleures ventes': 'Top products',
+    Performance: 'Performance',
+    'Top produits': 'Top products',
+    Excel: 'Excel',
+    PDF: 'PDF',
+    Entreprise: 'Company',
+    Devise: 'Currency',
+    'Sauvegarde / Restauration': 'Backup / Restore',
+    'Sauvegarder maintenant': 'Back up now',
+  },
+
+  ar: {
+    // خلي الـ ar الموجود عندك كما هو
+  },
+
+  de: {
+    Dashboard: 'Dashboard',
+    Ventes: 'Verkäufe',
+    'Nouvelle vente': 'Neuer Verkauf',
+    Historique: 'Verlauf',
+    Retours: 'Rückgaben',
+    Stock: 'Lagerbestand',
+    Produits: 'Produkte',
+    Catégories: 'Kategorien',
+    Mouvements: 'Bewegungen',
+    'Stock faible': 'Niedriger Lagerbestand',
+    Inventaire: 'Inventur',
+    'Entrées Stock': 'Wareneingänge',
+    'Nouvelle entrée': 'Neuer Wareneingang',
+    Clients: 'Kunden',
+    Caisse: 'Kasse',
+    Rapports: 'Berichte',
+    Factures: 'Rechnungen',
+    Paramètres: 'Einstellungen',
+    'Fournitures cafés': 'Cafébedarf',
+    'Gestion commerciale': 'Geschäftsverwaltung',
+    'hors ligne': 'offline',
+    Retour: 'Zurück',
+    Thème: 'Design',
+    'Se déconnecter': 'Abmelden',
+    'Ouvrir le menu': 'Menü öffnen',
+    'Fermer le menu': 'Menü schließen',
+    'Espace de travail': 'Arbeitsbereich',
+    'Nouveau produit': 'Neues Produkt',
+    'Rechercher…': 'Suchen…',
+    Nom: 'Name',
+    Catégorie: 'Kategorie',
+    Unité: 'Einheit',
+    'Prix de vente': 'Verkaufspreis',
+    'Prix d’achat': 'Einkaufspreis',
+    'Stock actuel': 'Aktueller Lagerbestand',
+    'Stock minimum': 'Mindestbestand',
+    Actif: 'Aktiv',
+    Inactif: 'Inaktiv',
+    'Informations produit': 'Produktinformationen',
+    'Détails et références': 'Details und Referenzen',
+    'Code-barres': 'Barcode',
+    'Unité de vente': 'Verkaufseinheit',
+    Suivi: 'Verfolgung',
+    'Dates importantes': 'Wichtige Daten',
+    'Créé le': 'Erstellt am',
+    'Dernière mise à jour': 'Zuletzt aktualisiert',
+    'Stock à surveiller': 'Lagerbestand beachten',
+    'Stock disponible': 'Verfügbarer Lagerbestand',
+    'Chargement du produit…': 'Produkt wird geladen…',
+    'Impossible de charger ce produit.': 'Produkt konnte nicht geladen werden.',
+    'Nom du produit': 'Produktname',
+    'Non renseigné': 'Nicht angegeben',
+    Statut: 'Status',
+    'Produit actif': 'Aktives Produkt',
+    'Produit inactif': 'Inaktives Produkt',
+    'Le stock actuel est inférieur ou égal au seuil minimum.':
+      'Der aktuelle Lagerbestand liegt unter oder auf dem Mindestbestand.',
+    'Le stock actuel est supérieur au seuil minimum.':
+      'Der aktuelle Lagerbestand liegt über dem Mindestbestand.',
+    'Historique des ventes': 'Verkaufsverlauf',
+    'Vue d’ensemble de l’activité': 'Übersicht der Geschäftsaktivitäten',
+    'Détail de la vente': 'Verkaufsdetails',
+    'Historique des entrées': 'Verlauf der Wareneingänge',
+    'Mouvements de stock': 'Lagerbewegungen',
+    'Détail client': 'Kundendetails',
+    'Nouveau client': 'Neuer Kunde',
+    Téléphone: 'Telefon',
+    Adresse: 'Adresse',
+    Reste: 'Restbetrag',
+    Profit: 'Gewinn',
+    'Tous les paiements': 'Alle Zahlungen',
+    Payé: 'Bezahlt',
+    Partiel: 'Teilweise bezahlt',
+    Impayé: 'Unbezahlt',
+    Facture: 'Rechnung',
+    Date: 'Datum',
+    Client: 'Kunde',
+    Total: 'Gesamt',
+    'Vente comptoir': 'Verkauf an der Kasse',
+    Espèces: 'Bargeld',
+    Chèque: 'Scheck',
+    Virement: 'Banküberweisung',
+    Autre: 'Andere',
+    Enregistrer: 'Speichern',
+    Ajouter: 'Hinzufügen',
+    Supprimer: 'Löschen',
+    Désactiver: 'Deaktivieren',
+    Activer: 'Aktivieren',
+    Valider: 'Bestätigen',
+    'Valider la vente': 'Verkauf bestätigen',
+    'Payer le total': 'Gesamtbetrag bezahlen',
+    Remise: 'Rabatt',
+    Paiement: 'Zahlung',
+    'Montant payé': 'Bezahlter Betrag',
+    'Sous-total': 'Zwischensumme',
+    'Aucun article. Scannez ou recherchez un produit.':
+      'Keine Artikel. Scannen oder suchen Sie ein Produkt.',
+    'Votre panier est vide': 'Ihr Warenkorb ist leer',
+    'Recherche, douchette, validation rapide':
+      'Suchen, scannen, schneller Kassiervorgang',
+    'Ventes et profit': 'Verkäufe und Gewinn',
+    'Meilleures ventes': 'Top-Produkte',
+    Performance: 'Leistung',
+    'Top produits': 'Top-Produkte',
+    Excel: 'Excel',
+    PDF: 'PDF',
+    Entreprise: 'Unternehmen',
+    Devise: 'Währung',
+    'Sauvegarde / Restauration': 'Sicherung / Wiederherstellung',
+    'Sauvegarder maintenant': 'Jetzt sichern',
+  },
+
+  it: {
+    Dashboard: 'Dashboard',
+    Ventes: 'Vendite',
+    'Nouvelle vente': 'Nuova vendita',
+    Historique: 'Cronologia',
+    Retours: 'Resi',
+    Stock: 'Magazzino',
+    Produits: 'Prodotti',
+    Catégories: 'Categorie',
+    Mouvements: 'Movimenti',
+    'Stock faible': 'Scorte basse',
+    Inventaire: 'Inventario',
+    'Entrées Stock': 'Entrate di magazzino',
+    'Nouvelle entrée': 'Nuova entrata',
+    Clients: 'Clienti',
+    Caisse: 'Cassa',
+    Rapports: 'Report',
+    Factures: 'Fatture',
+    Paramètres: 'Impostazioni',
+    'Fournitures cafés': 'Forniture per caffè',
+    'Gestion commerciale': 'Gestione aziendale',
+    'hors ligne': 'offline',
+    Retour: 'Indietro',
+    Thème: 'Tema',
+    'Se déconnecter': 'Disconnetti',
+    'Ouvrir le menu': 'Apri il menu',
+    'Fermer le menu': 'Chiudi il menu',
+    'Espace de travail': 'Area di lavoro',
+    'Nouveau produit': 'Nuovo prodotto',
+    'Rechercher…': 'Cerca…',
+    Nom: 'Nome',
+    Catégorie: 'Categoria',
+    Unité: 'Unità',
+    'Prix de vente': 'Prezzo di vendita',
+    'Prix d’achat': 'Prezzo di acquisto',
+    'Stock actuel': 'Scorte attuali',
+    'Stock minimum': 'Scorte minime',
+    Actif: 'Attivo',
+    Inactif: 'Inattivo',
+    'Informations produit': 'Informazioni sul prodotto',
+    'Détails et références': 'Dettagli e riferimenti',
+    'Code-barres': 'Codice a barre',
+    'Unité de vente': 'Unità di vendita',
+    Suivi: 'Monitoraggio',
+    'Dates importantes': 'Date importanti',
+    'Créé le': 'Creato il',
+    'Dernière mise à jour': 'Ultimo aggiornamento',
+    'Stock à surveiller': 'Scorte da controllare',
+    'Stock disponible': 'Scorte disponibili',
+    'Chargement du produit…': 'Caricamento del prodotto…',
+    'Impossible de charger ce produit.':
+      'Impossibile caricare questo prodotto.',
+    'Nom du produit': 'Nome del prodotto',
+    'Non renseigné': 'Non specificato',
+    Statut: 'Stato',
+    'Produit actif': 'Prodotto attivo',
+    'Produit inactif': 'Prodotto inattivo',
+    'Le stock actuel est inférieur ou égal au seuil minimum.':
+      'Le scorte attuali sono inferiori o uguali alla soglia minima.',
+    'Le stock actuel est supérieur au seuil minimum.':
+      'Le scorte attuali sono superiori alla soglia minima.',
+    'Historique des ventes': 'Cronologia delle vendite',
+    'Vue d’ensemble de l’activité':
+      'Panoramica dell’attività aziendale',
+    'Détail de la vente': 'Dettagli della vendita',
+    'Historique des entrées': 'Cronologia delle entrate',
+    'Mouvements de stock': 'Movimenti di magazzino',
+    'Détail client': 'Dettagli cliente',
+    'Nouveau client': 'Nuovo cliente',
+    Téléphone: 'Telefono',
+    Adresse: 'Indirizzo',
+    Reste: 'Rimanente',
+    Profit: 'Profitto',
+    'Tous les paiements': 'Tutti i pagamenti',
+    Payé: 'Pagato',
+    Partiel: 'Parziale',
+    Impayé: 'Non pagato',
+    Facture: 'Fattura',
+    Date: 'Data',
+    Client: 'Cliente',
+    Total: 'Totale',
+    'Vente comptoir': 'Vendita al banco',
+    Espèces: 'Contanti',
+    Chèque: 'Assegno',
+    Virement: 'Bonifico bancario',
+    Autre: 'Altro',
+    Enregistrer: 'Salva',
+    Ajouter: 'Aggiungi',
+    Supprimer: 'Elimina',
+    Désactiver: 'Disattiva',
+    Activer: 'Attiva',
+    Valider: 'Conferma',
+    'Valider la vente': 'Conferma vendita',
+    'Payer le total': 'Paga il totale',
+    Remise: 'Sconto',
+    Paiement: 'Pagamento',
+    'Montant payé': 'Importo pagato',
+    'Sous-total': 'Subtotale',
+    'Aucun article. Scannez ou recherchez un produit.':
+      'Nessun articolo. Scansiona o cerca un prodotto.',
+    'Votre panier est vide': 'Il carrello è vuoto',
+    'Recherche, douchette, validation rapide':
+      'Cerca, scansiona, checkout rapido',
+    'Ventes et profit': 'Vendite e profitto',
+    'Meilleures ventes': 'Prodotti più venduti',
+    Performance: 'Prestazioni',
+    'Top produits': 'Prodotti migliori',
+    Excel: 'Excel',
+    PDF: 'PDF',
+    Entreprise: 'Azienda',
+    Devise: 'Valuta',
+    'Sauvegarde / Restauration': 'Backup / Ripristino',
+    'Sauvegarder maintenant': 'Esegui backup ora',
+  },
+
+  tr: {
+    Dashboard: 'Kontrol Paneli',
+    Ventes: 'Satışlar',
+    'Nouvelle vente': 'Yeni satış',
+    Historique: 'Geçmiş',
+    Retours: 'İadeler',
+    Stock: 'Stok',
+    Produits: 'Ürünler',
+    Catégories: 'Kategoriler',
+    Mouvements: 'Hareketler',
+    'Stock faible': 'Düşük stok',
+    Inventaire: 'Stok sayımı',
+    'Entrées Stock': 'Stok girişleri',
+    'Nouvelle entrée': 'Yeni giriş',
+    Clients: 'Müşteriler',
+    Caisse: 'Kasa',
+    Rapports: 'Raporlar',
+    Factures: 'Faturalar',
+    Paramètres: 'Ayarlar',
+    'Fournitures cafés': 'Kahve malzemeleri',
+    'Gestion commerciale': 'İşletme yönetimi',
+    'hors ligne': 'çevrimdışı',
+    Retour: 'Geri',
+    Thème: 'Tema',
+    'Se déconnecter': 'Çıkış yap',
+    'Ouvrir le menu': 'Menüyü aç',
+    'Fermer le menu': 'Menüyü kapat',
+    'Espace de travail': 'Çalışma alanı',
+    'Nouveau produit': 'Yeni ürün',
+    'Rechercher…': 'Ara…',
+    Nom: 'Ad',
+    Catégorie: 'Kategori',
+    Unité: 'Birim',
+    'Prix de vente': 'Satış fiyatı',
+    'Prix d’achat': 'Alış fiyatı',
+    'Stock actuel': 'Mevcut stok',
+    'Stock minimum': 'Minimum stok',
+    Actif: 'Aktif',
+    Inactif: 'Pasif',
+    'Informations produit': 'Ürün bilgileri',
+    'Détails et références': 'Detaylar ve referanslar',
+    'Code-barres': 'Barkod',
+    'Unité de vente': 'Satış birimi',
+    Suivi: 'Takip',
+    'Dates importantes': 'Önemli tarihler',
+    'Créé le': 'Oluşturulma tarihi',
+    'Dernière mise à jour': 'Son güncelleme',
+    'Stock à surveiller': 'Stok dikkat gerektiriyor',
+    'Stock disponible': 'Mevcut stok',
+    'Chargement du produit…': 'Ürün yükleniyor…',
+    'Impossible de charger ce produit.':
+      'Bu ürün yüklenemedi.',
+    'Nom du produit': 'Ürün adı',
+    'Non renseigné': 'Belirtilmemiş',
+    Statut: 'Durum',
+    'Produit actif': 'Aktif ürün',
+    'Produit inactif': 'Pasif ürün',
+    'Le stock actuel est inférieur ou égal au seuil minimum.':
+      'Mevcut stok minimum seviyeye eşit veya daha düşük.',
+    'Le stock actuel est supérieur au seuil minimum.':
+      'Mevcut stok minimum seviyenin üzerinde.',
+    'Historique des ventes': 'Satış geçmişi',
+    'Vue d’ensemble de l’activité':
+      'İşletme faaliyetlerine genel bakış',
+    'Détail de la vente': 'Satış detayları',
+    'Historique des entrées': 'Stok giriş geçmişi',
+    'Mouvements de stock': 'Stok hareketleri',
+    'Détail client': 'Müşteri detayları',
+    'Nouveau client': 'Yeni müşteri',
+    Téléphone: 'Telefon',
+    Adresse: 'Adres',
+    Reste: 'Kalan',
+    Profit: 'Kâr',
+    'Tous les paiements': 'Tüm ödemeler',
+    Payé: 'Ödendi',
+    Partiel: 'Kısmi',
+    Impayé: 'Ödenmedi',
+    Facture: 'Fatura',
+    Date: 'Tarih',
+    Client: 'Müşteri',
+    Total: 'Toplam',
+    'Vente comptoir': 'Tezgâh satışı',
+    Espèces: 'Nakit',
+    Chèque: 'Çek',
+    Virement: 'Banka havalesi',
+    Autre: 'Diğer',
+    Enregistrer: 'Kaydet',
+    Ajouter: 'Ekle',
+    Supprimer: 'Sil',
+    Désactiver: 'Devre dışı bırak',
+    Activer: 'Etkinleştir',
+    Valider: 'Onayla',
+    'Valider la vente': 'Satışı onayla',
+    'Payer le total': 'Toplamı öde',
+    Remise: 'İndirim',
+    Paiement: 'Ödeme',
+    'Montant payé': 'Ödenen tutar',
+    'Sous-total': 'Ara toplam',
+    'Aucun article. Scannez ou recherchez un produit.':
+      'Ürün yok. Bir ürün tarayın veya arayın.',
+    'Votre panier est vide': 'Sepetiniz boş',
+    'Recherche, douchette, validation rapide':
+      'Arama, barkod tarama, hızlı ödeme',
+    'Ventes et profit': 'Satışlar ve kâr',
+    'Meilleures ventes': 'En çok satanlar',
+    Performance: 'Performans',
+    'Top produits': 'En iyi ürünler',
+    Excel: 'Excel',
+    PDF: 'PDF',
+    Entreprise: 'Şirket',
+    Devise: 'Para birimi',
+    'Sauvegarde / Restauration': 'Yedekleme / Geri yükleme',
+    'Sauvegarder maintenant': 'Şimdi yedekle',
+  },
+};
+
+const languageNames: Record<Language, string> = {
+  fr: 'FR',
+  en: 'EN',
+  ar: 'ع',
+  de: 'DE',
+  it: 'IT',
+  tr: 'TR',
+};
+
+const originalText = new WeakMap<Text, string>();
+const originalAttributes = new WeakMap<HTMLElement, Record<string, string>>();
+
+function translateDom(language: Language) {
+  const dictionary = translations[language];
+  const root = document.body;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  let node = walker.nextNode();
+  while (node) {
+    const text = node as Text;
+    const source = originalText.get(text) ?? text.nodeValue ?? '';
+    originalText.set(text, source);
+    const trimmed = source.trim();
+    if (trimmed && dictionary[trimmed]) {
+      const translated = source.replace(trimmed, dictionary[trimmed]);
+      if (text.nodeValue !== translated) text.nodeValue = translated;
+    } else if (language === 'fr') {
+      if (text.nodeValue !== source) text.nodeValue = source;
+    }
+    node = walker.nextNode();
+  }
+
+  document.querySelectorAll<HTMLElement>('[placeholder], [title], [aria-label]').forEach((element) => {
+    const saved = originalAttributes.get(element) ?? {};
+    for (const attribute of ['placeholder', 'title', 'aria-label']) {
+      const value = element.getAttribute(attribute);
+      if (value !== null && saved[attribute] === undefined) saved[attribute] = value;
+      const source = saved[attribute];
+      if (source) {
+        const translated = language === 'fr' ? source : dictionary[source] ?? source;
+        if (element.getAttribute(attribute) !== translated) element.setAttribute(attribute, translated);
+      }
+    }
+    originalAttributes.set(element, saved);
+  });
+}
+
+const LanguageContext = createContext<{
+  language: Language;
+  setLanguage: (language: Language) => void;
+  t: (value: string) => string;
+  languageNames: typeof languageNames;
+}>({ language: 'fr', setLanguage: () => undefined, t: (value) => value, languageNames });
+
+export function LanguageProvider({ children }: { children: ReactNode }) {
+  const [language, setLanguage] = useState<Language>(() => {
+    const saved = localStorage.getItem('cafestock-language');
+    return saved === 'en' || saved === 'ar' || saved === 'fr' ? saved : 'fr';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('cafestock-language', language);
+    document.documentElement.lang = language;
+    document.documentElement.dir = language === 'ar' ? 'rtl' : 'ltr';
+    const observer = new MutationObserver(() => translateDom(language));
+    translateDom(language);
+    observer.observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['placeholder', 'title', 'aria-label'] });
+    return () => observer.disconnect();
+  }, [language]);
+
+  const value = useMemo(() => ({ language, setLanguage, t: (text: string) => translations[language][text] ?? text, languageNames }), [language]);
+  return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>;
+}
+
+export function useLanguage() {
+  return useContext(LanguageContext);
+}

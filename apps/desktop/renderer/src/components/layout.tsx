@@ -27,6 +27,7 @@ import {
 import { useTheme } from '@/lib/theme';
 import { setToken } from '@/lib/api';
 import { cn } from '@/lib/utils';
+import { useLanguage } from '@/lib/i18n';
 
 const nav = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -64,6 +65,7 @@ const nav = [
 
 export function AppLayout() {
   const { theme, toggle } = useTheme();
+  const { language, setLanguage, t, languageNames } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -99,24 +101,24 @@ export function AppLayout() {
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-lg shadow-primary/20"><Store className="h-5 w-5" /></div>
             <div>
               <div className="text-[17px] font-semibold tracking-tight">CaféStock</div>
-              <div className="text-[11px] text-sidebar-muted">Fournitures cafés</div>
+              <div className="text-[11px] text-sidebar-muted">{t('Fournitures cafés')}</div>
             </div>
           </div>
           <button className="rounded-lg p-2 text-sidebar-muted hover:bg-sidebar-accent hover:text-sidebar-foreground" onClick={closeSidebar} aria-label="Fermer le menu"><LogOut className="h-4 w-4 rotate-180" /></button>
         </div>
-        <nav className="flex-1 space-y-5 overflow-auto px-4 pb-4">
+        <nav className="flex-1 space-y-2 overflow-auto px-4 pb-4">
           {nav.map((item) =>
             'children' in item ? (
-              <div key={item.label}>
+              <div key={item.label} className='pb-3'>
                 <div className="mb-1 px-2 text-[11px] font-semibold uppercase tracking-wider text-sidebar-muted">
-                  {item.label}
+                  {t(item.label)}
                 </div>
                 {item?.children?.map((child) => (
-                  <Item key={child.to} to={child.to} label={child.label} icon={child.icon} onClick={closeMobile} end />
+                  <Item key={child.to} to={child.to} label={t(child.label)} icon={child.icon} onClick={closeMobile} end />
                 ))}
               </div>
             ) : (
-              <Item key={item.to} to={item.to} label={item.label} icon={item.icon} onClick={closeMobile} />
+              <Item key={item.to} to={item.to} label={t(item.label)} icon={item.icon} onClick={closeMobile} />
             ),
           )}
         </nav>
@@ -124,7 +126,7 @@ export function AppLayout() {
           <div className="flex items-center gap-3 rounded-xl bg-white/5 px-3 py-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20 text-xs font-semibold text-primary">AD</div>
             <div className="min-w-0 flex-1"><p className="truncate text-sm font-medium">Administrateur</p><p className="truncate text-[11px] text-sidebar-muted">Compte local</p></div>
-            <button onClick={logout} className="rounded-lg p-2 text-sidebar-muted transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground" aria-label="Se déconnecter"><LogOut className="h-4 w-4" /></button>
+            <button onClick={logout} className="rounded-lg p-2 text-sidebar-muted transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground" aria-label={t('Se déconnecter')}><LogOut className="h-4 w-4" /></button>
           </div>
         </div>
       </aside>
@@ -135,14 +137,22 @@ export function AppLayout() {
             <button
               className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               onClick={() => navigate(-1)}
-              aria-label="Retour à la page précédente"
-              title="Retour"
+              aria-label={t('Retour')}
+              title={t('Retour')}
             >
               <ArrowLeft className="h-4 w-4" />
             </button>
-            <div><p className="text-sm font-semibold">{currentLabel}</p><p className="hidden text-xs text-muted-foreground sm:block">Gestion commerciale <span className="mx-1">·</span> hors ligne</p></div>
+            <div><p className="text-sm font-semibold">{t(currentLabel)}</p><p className="hidden text-xs text-muted-foreground sm:block">{t('Gestion commerciale')} <span className="mx-1">·</span> {t('hors ligne')}</p></div>
           </div>
           <div className="flex items-center gap-2">
+            <select aria-label="Language" value={language} onChange={(event) => setLanguage(event.target.value as 'fr' | 'en' | 'ar')} className="h-9 w-[58px] rounded-lg border border-input bg-card px-2 text-xs font-semibold">
+              <option value="fr">{languageNames.fr}</option>
+              <option value="en">{languageNames.en}</option>
+              <option value="ar">{languageNames.ar}</option>
+              <option value="de">{languageNames.de}</option>
+              <option value="it">{languageNames.it}</option>
+              <option value="tr">{languageNames.tr}</option>
+            </select>
             <button className="rounded-lg p-2.5 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground" onClick={toggle} aria-label="Thème">
               {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </button>
