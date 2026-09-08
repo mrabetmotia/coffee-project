@@ -76,74 +76,78 @@ export function SettingsPage() {
   return (
     <div className="space-y-6">
       <PageHeader title="Paramètres" />
-      <Card>
-        <CardHeader>
-          <CardTitle>Entreprise</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-3">
-          <div>
-            <Label>Nom</Label>
-            <Input value={merged.companyName ?? ''} onChange={(e) => setForm({ ...form, companyName: e.target.value })} />
-          </div>
-          <div>
-            <Label>Téléphone</Label>
-            <Input value={merged.companyPhone ?? ''} onChange={(e) => setForm({ ...form, companyPhone: e.target.value })} />
-          </div>
-          <div>
-            <Label>Adresse</Label>
-            <Input value={merged.companyAddress ?? ''} onChange={(e) => setForm({ ...form, companyAddress: e.target.value })} />
-          </div>
-          <div>
-            <Label>Devise</Label>
-            <Input value={merged.currency ?? 'DT'} onChange={(e) => setForm({ ...form, currency: e.target.value })} />
-          </div>
-          <div>
-            <Label>Solde d’ouverture caisse</Label>
-            <Input
-              type="number"
-              value={String(merged.openingBalance ?? 0)}
-              onChange={(e) => setForm({ ...form, openingBalance: e.target.value })}
-            />
-          </div>
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={Boolean(merged.autoBackup)}
-              onChange={(e) => setForm({ ...form, autoBackup: e.target.checked })}
-            />
-            Sauvegarde automatique
-          </label>
-          <Button className='w-fit' onClick={() => save.mutate()}>Enregistrer</Button>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle>Sauvegarde / Restauration</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3 space-x-3">
-          <Button onClick={() => backup.mutate()}>Sauvegarder maintenant</Button>
-          <Button variant="outline" onClick={() => void pickRestore()}>
-            Restaurer un fichier…
-          </Button>
-          <ul className="text-sm text-muted-foreground">
-            {backups.map((b) => (
-              <li key={b.path}>
-                {b.name} · {new Date(b.createdAt).toLocaleString('fr-TN')}
-              </li>
-            ))}
-          </ul>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle>Mot de passe administrateur</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <Input type="password" placeholder="Actuel" value={currentPassword} onChange={(e) => setCurrent(e.target.value)} />
-          <Input type="password" placeholder="Nouveau" value={newPassword} onChange={(e) => setNew(e.target.value)} />
-          <Button onClick={() => pwd.mutate({ currentPassword, newPassword })}>Changer</Button>
-        </CardContent>
-      </Card>
+      <div className="grid gap-6 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Entreprise</CardTitle>
+          </CardHeader>
+          <CardContent className="grid gap-3">
+            <div>
+              <Label>Nom</Label>
+              <Input value={merged.companyName ?? ''} onChange={(e) => setForm({ ...form, companyName: e.target.value })} />
+            </div>
+            <div>
+              <Label>Téléphone</Label>
+              <Input value={merged.companyPhone ?? ''} onChange={(e) => setForm({ ...form, companyPhone: e.target.value })} />
+            </div>
+            <div>
+              <Label>Adresse</Label>
+              <Input value={merged.companyAddress ?? ''} onChange={(e) => setForm({ ...form, companyAddress: e.target.value })} />
+            </div>
+            <div>
+              <Label>Devise</Label>
+              <Input value={merged.currency ?? 'DT'} onChange={(e) => setForm({ ...form, currency: e.target.value })} />
+            </div>
+            <div>
+              <Label>Solde d’ouverture caisse</Label>
+              <Input
+                type="number"
+                value={String(merged.openingBalance ?? 0)}
+                onChange={(e) => setForm({ ...form, openingBalance: e.target.value })}
+              />
+            </div>
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={Boolean(merged.autoBackup)}
+                onChange={(e) => setForm({ ...form, autoBackup: e.target.checked })}
+              />
+              Sauvegarde automatique
+            </label>
+            <Button className='w-fit' onClick={() => save.mutate()}>Enregistrer</Button>
+          </CardContent>
+        </Card>
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Sauvegarde / Restauration</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 space-x-3">
+              <Button onClick={() => backup.mutate()}>Sauvegarder maintenant</Button>
+              <Button variant="outline" onClick={() => void pickRestore()}>
+                Restaurer un fichier…
+              </Button>
+              <ul className="text-sm text-muted-foreground">
+                {backups.map((b) => (
+                  <li key={b.path}>
+                    {b.name} · {new Date(b.createdAt).toLocaleString('fr-TN')}
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Mot de passe administrateur</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <Input type="password" placeholder="Actuel" value={currentPassword} onChange={(e) => setCurrent(e.target.value)} />
+              <Input type="password" placeholder="Nouveau" value={newPassword} onChange={(e) => setNew(e.target.value)} />
+              <Button onClick={() => pwd.mutate({ currentPassword, newPassword })}>Changer</Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }

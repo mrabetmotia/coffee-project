@@ -11,6 +11,7 @@ import { useLanguage } from '@/lib/i18n';
 
 type Product = {
   id: string;
+  image: string;
   name: string;
   sku: string;
   barcode: string | null;
@@ -59,6 +60,11 @@ export function ProductDetailPage() {
           <CardHeader>
             <div><p className="eyebrow mb-1">{t('Informations produit')}</p><CardTitle>{t('Détails et références')}</CardTitle></div>
           </CardHeader>
+          <img
+            src={data.image || "../images/undefined.png"}
+            alt={data.name}
+            className="m-5 mt-2 h-32 w-32 rounded-md border object-cover"
+          />
           <CardContent className="grid gap-5 sm:grid-cols-2">
             <Detail label={t('Nom du produit')} value={data.name} />
             <Detail label={t('Catégorie')} value={data.category.name} />

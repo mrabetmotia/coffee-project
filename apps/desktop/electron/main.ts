@@ -103,7 +103,7 @@ app.whenReady().then(async () => {
   ipcMain.handle('pick-backup', async () => {
     const res = await dialog.showOpenDialog({
       defaultPath: paths.backups,
-      filters: [{ name: 'SQLite', extensions: ['db'] }],
+      filters: [{ name: 'postgresql', extensions: ['db'] }],
       properties: ['openFile'],
     });
     return res.canceled ? null : res.filePaths[0];

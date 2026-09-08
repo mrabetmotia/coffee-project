@@ -5,8 +5,9 @@ generator client {
 // SQLite for v1. To migrate to PostgreSQL later: change provider + DATABASE_URL.
 // Do not add SQLite-specific business SQL in services.
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 enum UserRole {
