@@ -1,17 +1,16 @@
 appId: com.cafestock.desktop
 productName: CaféStock
+
 directories:
   output: release
+
 files:
   - out/**/*
-extraResources:
-  - from: ../api/dist
-    to: api
-  - from: ../api/prisma
-    to: api/prisma
+
 win:
   target:
     - nsis
+
 nsis:
   oneClick: false
   allowToChangeInstallationDirectory: true
