@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Modal, ModalContent } from '@/components/ui/modal';
 import { Label } from '@/components/ui/label';
 import { num } from '@/lib/utils';
+import { Pagination } from '@/components/ui/pagination';
 
 type Category = { id: string; name: string; active: boolean; _count?: { products: number } };
 type Product = {
@@ -33,6 +34,8 @@ type Product = {
 export function ProductsPage() {
   const qc = useQueryClient();
   const [q, setQ] = useState('');
+  const [page, setPage] = useState(0);
+  const [view, setView] = useState<'table' | 'card'>('table');
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState({
@@ -46,9 +49,13 @@ export function ProductsPage() {
     salePrice: 0,
     minimumStock: 0,
   });
+  const take = 12;
   const { data } = useQuery({
-    queryKey: ['products', q],
-    queryFn: () => api<{ items: Product[] }>(`/products?q=${encodeURIComponent(q)}&take=200`),
+    queryKey: ['products', q, page],
+    queryFn: () =>
+      api<{ items: Product[]; total: number }>(
+        `/products?q=${encodeURIComponent(q)}&skip=${page * take}&take=${take}`,
+      ),
   });
   const { data: cats = [] } = useQuery({ queryKey: ['categories'], queryFn: () => api<Category[]>('/categories') });
   const mut = useMutation({
@@ -117,70 +124,118 @@ export function ProductsPage() {
           </Button>
         }
       />
-      <Input className="mb-4 max-w-sm" placeholder="Rechercher…" value={q} onChange={(e) => setQ(e.target.value)} />
-      <Table>
-        <THead>
-          <tr>
-            <Th>Nom</Th>
-            <Th>SKU</Th>
-            <Th>Catégorie</Th>
-            <Th>Stock</Th>
-            <Th>Achat</Th>
-            <Th>Vente</Th>
-            <Th></Th>
-          </tr>
-        </THead>
-        <tbody>
-          {(data?.items ?? []).map((p) => (
-            <tr key={p.id}>
-              <Td>
-                <div className="flex items-center gap-3">
-                  {p.image ? (
-                    <img src={p.image} alt={p.name} className="h-10 w-10 rounded-md border object-cover" />
-                  ) : (
-                    <div className="flex h-10 w-10 items-center justify-center rounded-md border bg-muted text-xs font-semibold text-muted-foreground">
-                      {p.name.slice(0, 1).toUpperCase()}
-                    </div>
-                  )}
-                  <div>
-                    <Link className="font-semibold text-primary hover:underline" to={`/stock/produits/${p.id}`}>
-                      {p.name}
-                    </Link>
-                    {num(p.currentStock) <= num(p.minimumStock) ? <Badge className="ml-2" variant="warning">Stock faible</Badge> : null}
-                  </div>
-                </div>
-              </Td>
-              <Td>{p.sku}</Td>
-              <Td>{p.category.name}</Td>
-              <Td>
-                {formatQty(num(p.currentStock))} {p.unit}
-              </Td>
-              <Td>{formatMoney(num(p.purchasePrice))}</Td>
-              <Td>{formatMoney(num(p.salePrice))}</Td>
-              <Td className="space-x-2">
-                <Button size="sm" variant="outline" onClick={() => {
-                  setEditingId(p.id);
-                  setForm({
-                    name: p.name,
-                    sku: p.sku,
-                    barcode: p.barcode ?? '',
-                    image: p.image ?? '',
-                    categoryId: p.categoryId,
-                    unit: p.unit,
-                    purchasePrice: Number(p.purchasePrice),
-                    salePrice: Number(p.salePrice),
-                    minimumStock: Number(p.minimumStock),
-                  });
-                  setOpen(true);
-                }}>
-                  Modifier
-                </Button>
-                {p.active ? null : <Badge variant="outline">Inactif</Badge>}
-              </Td>
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <Input className="max-w-sm" placeholder="Rechercher…" value={q} onChange={(e) => setQ(e.target.value)} />
+        <div className="inline-flex rounded-lg border border-border bg-background p-1 space-x-1">
+          <Button
+            size="sm"
+            variant={view === 'table' ? 'default' : 'ghost'}
+            className="rounded-md"
+            onClick={() => setView('table')}
+          >
+            Tableau
+          </Button>
+          <Button
+            size="sm"
+            variant={view === 'card' ? 'default' : 'ghost'}
+            className="rounded-md"
+            onClick={() => setView('card')}
+          >
+            Cartes
+          </Button>
+        </div>
+      </div>
+
+      {view === 'table' ? (
+        <Table>
+          <THead>
+            <tr>
+              <Th>Nom</Th>
+              <Th>SKU</Th>
+              <Th>Catégorie</Th>
+              <Th>Stock</Th>
+              <Th>Achat</Th>
+              <Th>Vente</Th>
+              <Th></Th>
             </tr>
+          </THead>
+          <tbody>
+            {(data?.items ?? []).map((p) => (
+              <tr key={p.id}>
+                <Td>
+                  <div className="flex items-center gap-3">
+                    {p.image ? (
+                      <img src={p.image} alt={p.name} className="h-10 w-10 rounded-md border object-cover" />
+                    ) : (
+                      <div className="flex h-10 w-10 items-center justify-center rounded-md border bg-muted text-xs font-semibold text-muted-foreground">
+                        {p.name.slice(0, 1).toUpperCase()}
+                      </div>
+                    )}
+                    <div>
+                      <Link className="font-semibold text-primary hover:underline" to={`/stock/produits/${p.id}`}>
+                        {p.name}
+                      </Link>
+                      {num(p.currentStock) <= num(p.minimumStock) ? <Badge className="ml-2" variant="destructive">Stock faible</Badge> : null}
+                    </div>
+                  </div>
+                </Td>
+                <Td>{p.sku}</Td>
+                <Td>{p.category.name}</Td>
+                <Td>
+                  {formatQty(num(p.currentStock))} {p.unit}
+                </Td>
+                <Td>{formatMoney(num(p.purchasePrice))}</Td>
+                <Td>{formatMoney(num(p.salePrice))}</Td>
+                <Td className="space-x-2">
+                  <Button size="sm" variant="outline" onClick={() => {
+                    setEditingId(p.id);
+                    setForm({
+                      name: p.name,
+                      sku: p.sku,
+                      barcode: p.barcode ?? '',
+                      image: p.image ?? '',
+                      categoryId: p.categoryId,
+                      unit: p.unit,
+                      purchasePrice: Number(p.purchasePrice),
+                      salePrice: Number(p.salePrice),
+                      minimumStock: Number(p.minimumStock),
+                    });
+                    setOpen(true);
+                  }}>
+                    Modifier
+                  </Button>
+                  {p.active ? null : <Badge variant="outline">Inactif</Badge>}
+                </Td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {(data?.items ?? []).map((p) => (
+            <ProductCard
+              key={p.id}
+              product={p}
+              onEdit={() => {
+                setEditingId(p.id);
+                setForm({
+                  name: p.name,
+                  sku: p.sku,
+                  barcode: p.barcode ?? '',
+                  image: p.image ?? '',
+                  categoryId: p.categoryId,
+                  unit: p.unit,
+                  purchasePrice: Number(p.purchasePrice),
+                  salePrice: Number(p.salePrice),
+                  minimumStock: Number(p.minimumStock),
+                });
+                setOpen(true);
+              }}
+            />
           ))}
-        </tbody>
-      </Table>
+        </div>
+      )}
+      <Pagination page={page} total={data?.total ?? 0} take={take} onPageChange={(next) => setPage(next)} />
       <Modal.Root open={open} onOpenChange={setOpen}>
         <ModalContent>
           <Modal.Title className="text-lg font-semibold">{editingId ? 'Modifier le produit' : 'Nouveau produit'}</Modal.Title>
@@ -212,6 +267,60 @@ export function ProductsPage() {
           </div>
         </ModalContent>
       </Modal.Root>
+    </div>
+  );
+}
+
+function ProductCard({ product, onEdit }: { product: Product; onEdit: () => void }) {
+  const stockLow = num(product.currentStock) <= num(product.minimumStock);
+
+  return (
+    <div className="rounded-2xl border border-border/80 bg-card p-4 shadow-[0_8px_30px_hsl(var(--foreground)/0.04)] relative">
+      {stockLow ? <Badge className="absolute top-3 right-3" variant="destructive">Faible</Badge> : null}
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center gap-3">
+          {product.image ? (
+            <img src={product.image} alt={product.name} className="h-12 w-12 rounded-xl border object-cover" />
+          ) : (
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl border bg-muted text-sm font-semibold text-muted-foreground">
+              {product.name.slice(0, 1).toUpperCase()}
+            </div>
+          )}
+          <div>
+            <Link className="block font-semibold text-primary hover:underline" to={`/stock/produits/${product.id}`}>
+              {product.name}
+            </Link>
+            <p className="text-xs text-muted-foreground">{product.sku}</p>
+          </div>
+        </div>
+        {!product.active ? <Badge variant="outline">Inactif</Badge> : null}
+      </div>
+
+      <div className="mt-4 space-y-2 text-sm">
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-muted-foreground">Catégorie</span>
+          <span className="font-medium">{product.category.name}</span>
+        </div>
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-muted-foreground">Stock</span>
+          <span className="font-medium">
+            {formatQty(num(product.currentStock))} {product.unit}
+          </span>
+        </div>
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-muted-foreground">Achat</span>
+          <span className="font-medium">{formatMoney(num(product.purchasePrice))}</span>
+        </div>
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-muted-foreground">Vente</span>
+          <span className="font-medium">{formatMoney(num(product.salePrice))}</span>
+        </div>
+      </div>
+
+      <div className="mt-4 flex items-center justify-between gap-2">
+        <Button size="sm" variant="outline" onClick={onEdit}>Modifier</Button>
+        {stockLow ? <span className="text-xs text-red-500 dark:text-red-600">Stock minimum atteint</span> : null}
+      </div>
     </div>
   );
 }

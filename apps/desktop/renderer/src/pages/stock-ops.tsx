@@ -183,8 +183,10 @@ export function NewEntryPage() {
 }
 
 export function EntriesHistoryPage() {
+  const [page, setPage] = useState(0);
+  const take = 12;
   const { data } = useQuery({
-    queryKey: ['entries'],
+    queryKey: ['entries', page],
     queryFn: () =>
       api<{
         items: {
@@ -194,7 +196,8 @@ export function EntriesHistoryPage() {
           totalCost: string;
           items: { quantity: string; product: { name: string, image: string } }[];
         }[];
-      }>('/stock-entries'),
+        total: number;
+      }>(`/stock-entries?skip=${page * take}&take=${take}`),
   });
   return (
     <div>
@@ -219,6 +222,7 @@ export function EntriesHistoryPage() {
           ))}
         </tbody>
       </Table>
+      <Pagination page={page} total={data?.total ?? 0} take={take} onPageChange={(next) => setPage(next)} />
     </div>
   );
 }

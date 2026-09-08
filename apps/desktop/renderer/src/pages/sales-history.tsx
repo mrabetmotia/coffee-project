@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, THead, Th, Td } from '@/components/ui/table';
 import { num } from '@/lib/utils';
 import { useState } from 'react';
+import { Pagination } from '@/components/ui/pagination';
 
 type Sale = {
   id: string;
@@ -24,13 +25,15 @@ type Sale = {
 export function SalesHistoryPage() {
   const [q, setQ] = useState('');
   const [status, setStatus] = useState('');
+  const [page, setPage] = useState(0);
+  const take = 12;
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['sales', q, status],
+    queryKey: ['sales', q, status, page],
     queryFn: () => {
-      const params = new URLSearchParams({ take: '100' });
+      const params = new URLSearchParams({ take: String(take), skip: String(page * take) });
       if (q.trim()) params.set('q', q.trim());
       if (status) params.set('paymentStatus', status);
-      return api<{ items: Sale[] }>(`/sales?${params.toString()}`);
+      return api<{ items: Sale[]; total: number }>(`/sales?${params.toString()}`);
     },
   });
   const statusVariant = (s: PaymentStatus) =>
@@ -97,6 +100,7 @@ export function SalesHistoryPage() {
           ))}
         </tbody>
       </Table>
+      <Pagination page={page} total={data?.total ?? 0} take={take} onPageChange={(next) => setPage(next)} />
     </div>
   );
 }
