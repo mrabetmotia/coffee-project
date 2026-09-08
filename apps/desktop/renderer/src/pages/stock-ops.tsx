@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Table, THead, Th, Td } from '@/components/ui/table';
 import { num } from '@/lib/utils';
 
-type Product = { id: string; name: string; sku: string; currentStock: string; purchasePrice: string };
+type Product = { id: string; name: string; sku: string; currentStock: string; purchasePrice: string; image: string };
 
 export function InventoryPage() {
   const { data } = useQuery({
@@ -54,6 +54,11 @@ export function InventoryPage() {
             return (
               <tr key={p.id}>
                 <Td>
+                  <img
+                    src={p.image || "../images/undefined.png"}
+                    alt={p.name}
+                    className="mr-2 inline-block h-6 w-6 rounded-md border object-cover"
+                  />
                   {p.name} <span className="text-muted-foreground">{p.sku}</span>
                 </Td>
                 <Td>{formatQty(sys)}</Td>
@@ -116,6 +121,11 @@ export function NewEntryPage() {
             setQ('');
           }}
         >
+          <img
+            src={p.image || "../images/undefined.png"}
+            alt={p.name}
+            className="mr-2 inline-block h-6 w-6 rounded-md border object-cover"
+          />
           {p.name} · {p.sku}
         </button>
       ))}
@@ -132,7 +142,13 @@ export function NewEntryPage() {
           <tbody>
             {lines.map((l, i) => (
               <tr key={`${l.product.id}-${i}`}>
-                <Td>{l.product.name}</Td>
+                <Td>
+                  <img
+                    src={l.product.image || "../images/undefined.png"}
+                    alt={l.product.name}
+                    className="mr-2 inline-block h-6 w-6 rounded-md border object-cover"
+                  />
+                  {l.product.name}</Td>
                 <Td>
                   <Input
                     type="number"
@@ -176,7 +192,7 @@ export function EntriesHistoryPage() {
           number: string;
           createdAt: string;
           totalCost: string;
-          items: { quantity: string; product: { name: string } }[];
+          items: { quantity: string; product: { name: string, image: string } }[];
         }[];
       }>('/stock-entries'),
   });
@@ -197,7 +213,7 @@ export function EntriesHistoryPage() {
             <tr key={e.id}>
               <Td>{e.number}</Td>
               <Td>{new Date(e.createdAt).toLocaleString('fr-TN')}</Td>
-              <Td>{e.items.map((i) => `${i.product.name} × ${formatQty(num(i.quantity))}`).join(', ')}</Td>
+              <Td><img src={e.items[0].product.image || "../images/undefined.png"} alt={e.items[0].product.name} className="mr-2 inline-block h-6 w-6 rounded-md border object-cover" />  {e.items[0].product.name} × {formatQty(num(e.items[0].quantity))}</Td>
               <Td>{formatMoney(num(e.totalCost))}</Td>
             </tr>
           ))}

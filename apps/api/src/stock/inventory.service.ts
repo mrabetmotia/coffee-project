@@ -53,7 +53,7 @@ export class InventoryService {
 
   list() {
     return this.prisma.inventorySession.findMany({
-      include: { items: { include: { product: { select: { name: true, sku: true } } } } },
+      include: { items: { include: { product: { select: { name: true, sku: true, image: true } } } } },
       orderBy: { createdAt: 'desc' },
       take: 50,
     });

@@ -58,7 +58,7 @@ export class StockService {
     const [items, total] = await this.prisma.$transaction([
       this.prisma.stockMovement.findMany({
         where,
-        include: { product: { select: { name: true, sku: true } } },
+        include: { product: { select: { name: true, sku: true, image: true } } },
         orderBy: { createdAt: 'desc' },
         skip: params.skip ?? 0,
         take: params.take ?? 50,

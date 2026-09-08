@@ -64,9 +64,20 @@ describe('Critical business logic', () => {
       salePrice: 0.12,
       currentStock: 0,
       minimumStock: 50,
+      image: 'https://example.com/gobelet.png',
     });
     productId = p!.id;
     expect(p!.sku).toBe('GOB-18');
+    expect(p!.image).toBe('https://example.com/gobelet.png');
+  });
+
+  it('updates a product image and price', async () => {
+    const updated = await products.update(productId, {
+      salePrice: 0.15,
+      image: 'https://example.com/gobelet-updated.png',
+    });
+    expect(updated.image).toBe('https://example.com/gobelet-updated.png');
+    expect(updated.salePrice.toNumber()).toBeCloseTo(0.15);
   });
 
   it('stock entry increases stock and updates CMP', async () => {

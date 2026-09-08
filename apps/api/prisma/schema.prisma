@@ -70,6 +70,7 @@ model Product {
   name          String
   sku           String   @unique
   barcode       String?  @unique
+  image         String?
   categoryId    String
   category      Category @relation(fields: [categoryId], references: [id])
   unit          String   @default("pièce")

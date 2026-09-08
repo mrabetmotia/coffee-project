@@ -16,29 +16,30 @@ export function ReturnsPage() {
           createdAt: string;
           refundAmount: string;
           sale: { invoiceNumber: string };
-          items: { quantity: string; product: { name: string } }[];
+          items: { quantity: string; product: { name: string, image: string } }[];
         }[]
       >('/sales/returns'),
   });
+  console.log("data", data)
   return (
     <div>
       <PageHeader title="Retours" />
       <Table>
         <THead>
           <tr>
-            <Th>Date</Th>
-            <Th>Facture</Th>
             <Th>Articles</Th>
+            <Th>Facture</Th>
             <Th>Remboursement</Th>
+            <Th>Date</Th>
           </tr>
         </THead>
         <tbody>
           {data.map((r) => (
             <tr key={r.id}>
-              <Td>{new Date(r.createdAt).toLocaleString('fr-TN')}</Td>
+              <Td><img src={r.items[0]?.product.image || "../images/undefined.png"} alt={r.items[0]?.product.name} className="mr-2 inline-block h-6 w-6 rounded-md border object-cover" /> {r.items.map((i) => `${i.product.name} × ${formatQty(num(i.quantity))}`).join(', ')}</Td>
               <Td>{r.sale.invoiceNumber}</Td>
-              <Td>{r.items.map((i) => `${i.product.name} × ${formatQty(num(i.quantity))}`).join(', ')}</Td>
               <Td>{formatMoney(num(r.refundAmount))}</Td>
+              <Td>{new Date(r.createdAt).toLocaleString('fr-TN')}</Td>
             </tr>
           ))}
         </tbody>
@@ -61,10 +62,11 @@ export function MovementsPage() {
           reason: string | null;
           reference: string | null;
           createdAt: string;
-          product: { name: string; sku: string };
+          product: { name: string; sku: string; image: string };
         }[];
       }>('/stock/movements?take=200'),
   });
+  console.log("data", data)
   return (
     <div>
       <PageHeader title="Mouvements de stock" />
@@ -85,6 +87,11 @@ export function MovementsPage() {
             <tr key={m.id}>
               <Td>{new Date(m.createdAt).toLocaleString('fr-TN')}</Td>
               <Td>
+                <img
+                  src={m.product.image || "../images/undefined.png"}
+                  alt={m.product.name}
+                  className="mr-2 inline-block h-6 w-6 rounded-md border object-cover"
+                />
                 {m.product.name} <span className="text-muted-foreground">{m.product.sku}</span>
               </Td>
               <Td>{MOVEMENT_TYPE_LABELS[m.type]}</Td>
@@ -104,7 +111,7 @@ export function LowStockPage() {
   const { data = [] } = useQuery({
     queryKey: ['low-stock'],
     queryFn: () =>
-      api<{ id: string; name: string; sku: string; currentStock: string; minimumStock: string }[]>('/stock/low'),
+      api<{ id: string; name: string; image: string; sku: string; currentStock: string; minimumStock: string }[]>('/stock/low'),
   });
   return (
     <div>
@@ -121,7 +128,14 @@ export function LowStockPage() {
         <tbody>
           {data.map((p) => (
             <tr key={p.id}>
-              <Td>{p.name}</Td>
+              <Td>
+                <img
+                  src={p.image || "../images/undefined.png"}
+                  alt={p.name}
+                  className="mr-2 inline-block h-6 w-6 rounded-md border object-cover"
+                />
+                {p.name}
+              </Td>
               <Td>{p.sku}</Td>
               <Td>{formatQty(num(p.currentStock))}</Td>
               <Td>{formatQty(num(p.minimumStock))}</Td>

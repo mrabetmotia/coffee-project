@@ -13,6 +13,7 @@ import { Barcode, Check, Search, Trash2 } from 'lucide-react';
 type Product = {
   id: string;
   name: string;
+  image: string;
   sku: string;
   barcode: string | null;
   salePrice: string;
@@ -99,7 +100,7 @@ export function NewSalePage() {
   });
 
   const canSubmit = cart.length > 0 && !mutation.isPending;
-
+  console.log("results", results)
   return (
     <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
       <div>
@@ -125,7 +126,12 @@ export function NewSalePage() {
                   className="flex w-full items-center justify-between gap-4 border-b border-border/70 px-4 py-3 text-left text-sm transition-colors last:border-0 hover:bg-accent"
                   onClick={() => addProduct(p)}
                 >
-                  <span className="min-w-0 truncate font-medium">
+                  <span className="min-w-0 truncate font-medium flex items-center gap-2">
+                    <img
+                      src={p?.image || "../images/undefined.png"}
+                      alt={p.name}
+                      className="h-10 w-10 rounded-md border object-cover"
+                    />
                     {p.name} <span className="font-normal text-muted-foreground">· {p.sku}</span>
                   </span>
                   <span className="shrink-0 text-xs text-muted-foreground">

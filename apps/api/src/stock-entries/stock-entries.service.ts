@@ -31,7 +31,7 @@ export class StockEntriesService {
   list(skip = 0, take = 50) {
     return this.prisma.$transaction([
       this.prisma.stockEntry.findMany({
-        include: { items: { include: { product: { select: { name: true, sku: true } } } } },
+        include: { items: { include: { product: { select: { name: true, sku: true, image: true } } } } },
         orderBy: { createdAt: 'desc' },
         skip,
         take,

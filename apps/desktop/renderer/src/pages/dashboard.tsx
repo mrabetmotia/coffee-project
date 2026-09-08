@@ -6,9 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { num } from '@/lib/utils';
 import { cn } from '@/lib/utils';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowUpRight, CircleDollarSign, CreditCard, PackageCheck, ShoppingBag, WalletCards } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 type Dash = {
   revenue: number;
@@ -27,19 +28,22 @@ type Dash = {
 
 export function DashboardPage() {
   const [period, setPeriod] = useState('today');
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isFetching } = useQuery({
     queryKey: ['dashboard', period],
     queryFn: () => api<Dash>(`/dashboard?period=${period}`),
   });
 
-  const kpis = [
-    { label: 'Chiffre d’affaires', value: formatMoney(data?.revenue ?? 0), icon: CircleDollarSign, tone: 'text-primary bg-accent' },
-    { label: 'Profit net', value: formatMoney(data?.profit ?? 0), icon: ArrowUpRight, tone: 'text-emerald-700 bg-emerald-50 dark:text-emerald-300 dark:bg-emerald-950/40' },
-    { label: 'Ventes', value: String(data?.salesCount ?? 0), icon: ShoppingBag, tone: 'text-sky-700 bg-sky-50 dark:text-sky-300 dark:bg-sky-950/40' },
-    { label: 'Produits vendus', value: formatQty(data?.productsSold ?? 0), icon: PackageCheck, tone: 'text-violet-700 bg-violet-50 dark:text-violet-300 dark:bg-violet-950/40' },
-    { label: 'Encaissé', value: formatMoney(data?.collected ?? 0), icon: CreditCard, tone: 'text-amber-700 bg-amber-50 dark:text-amber-300 dark:bg-amber-950/40' },
-    { label: 'Soldes clients', value: formatMoney(data?.remainingBalances ?? 0), icon: WalletCards, tone: 'text-rose-700 bg-rose-50 dark:text-rose-300 dark:bg-rose-950/40' },
-  ];
+  const kpis = useMemo(
+    () => [
+      { label: 'Chiffre d’affaires', value: formatMoney(data?.revenue ?? 0), icon: CircleDollarSign, tone: 'text-primary bg-accent' },
+      { label: 'Profit net', value: formatMoney(data?.profit ?? 0), icon: ArrowUpRight, tone: 'text-emerald-700 bg-emerald-50 dark:text-emerald-300 dark:bg-emerald-950/40' },
+      { label: 'Ventes', value: String(data?.salesCount ?? 0), icon: ShoppingBag, tone: 'text-sky-700 bg-sky-50 dark:text-sky-300 dark:bg-sky-950/40' },
+      { label: 'Produits vendus', value: formatQty(data?.productsSold ?? 0), icon: PackageCheck, tone: 'text-violet-700 bg-violet-50 dark:text-violet-300 dark:bg-violet-950/40' },
+      { label: 'Encaissé', value: formatMoney(data?.collected ?? 0), icon: CreditCard, tone: 'text-amber-700 bg-amber-50 dark:text-amber-300 dark:bg-amber-950/40' },
+      { label: 'Soldes clients', value: formatMoney(data?.remainingBalances ?? 0), icon: WalletCards, tone: 'text-rose-700 bg-rose-50 dark:text-rose-300 dark:bg-rose-950/40' },
+    ],
+    [data],
+  );
 
   return (
     <div>
@@ -47,20 +51,21 @@ export function DashboardPage() {
         title="Dashboard"
         subtitle="Vue d’ensemble de l’activité"
         actions={
-          <select
-            className="h-9 rounded-md border bg-background px-3 text-sm"
-            value={period}
-            onChange={(e) => setPeriod(e.target.value)}
-          >
-            <option value="today">Aujourd’hui</option>
-            <option value="week">Cette semaine</option>
-            <option value="month">Ce mois</option>
-            <option value="year">Cette année</option>
-          </select>
+          <Select value={period} onValueChange={setPeriod}>
+            <SelectTrigger className="h-9 w-[180px] rounded-md border bg-background px-3 text-sm shadow-none">
+              <SelectValue placeholder="Période" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="today">Aujourd’hui</SelectItem>
+              <SelectItem value="week">Cette semaine</SelectItem>
+              <SelectItem value="month">Ce mois</SelectItem>
+              <SelectItem value="year">Cette année</SelectItem>
+            </SelectContent>
+          </Select>
         }
       />
       {isLoading ? <p className="text-sm text-muted-foreground">Chargement…</p> : null}
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6">
+      <div key={period} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6">
         {kpis.map((k) => (
           <Card key={k.label} className="overflow-hidden">
             <CardHeader className="pb-2">

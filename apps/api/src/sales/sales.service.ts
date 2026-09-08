@@ -352,7 +352,7 @@ export class SalesService {
     return this.prisma.saleReturn.findMany({
       include: {
         sale: { select: { invoiceNumber: true, createdAt: true } },
-        items: { include: { product: { select: { name: true, sku: true } } } },
+        items: { include: { product: { select: { name: true, sku: true, image: true } } } },
       },
       orderBy: { createdAt: 'desc' },
       take: 100,

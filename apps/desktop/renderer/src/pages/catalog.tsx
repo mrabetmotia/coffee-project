@@ -19,6 +19,7 @@ type Product = {
   name: string;
   sku: string;
   barcode: string | null;
+  image: string | null;
   unit: string;
   purchasePrice: string;
   salePrice: string;
@@ -33,15 +34,16 @@ export function ProductsPage() {
   const qc = useQueryClient();
   const [q, setQ] = useState('');
   const [open, setOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState({
     name: '',
     sku: '',
     barcode: '',
+    image: '',
     categoryId: '',
     unit: 'pièce',
     purchasePrice: 0,
     salePrice: 0,
-    currentStock: 0,
     minimumStock: 0,
   });
   const { data } = useQuery({
@@ -50,18 +52,39 @@ export function ProductsPage() {
   });
   const { data: cats = [] } = useQuery({ queryKey: ['categories'], queryFn: () => api<Category[]>('/categories') });
   const mut = useMutation({
-    mutationFn: () =>
-      api('/products', {
+    mutationFn: () => {
+      const payload = {
+        ...form,
+        sku: form.sku || undefined,
+        barcode: form.barcode || undefined,
+        image: form.image || undefined,
+      };
+      if (editingId) {
+        return api(`/products/${editingId}`, {
+          method: 'PATCH',
+          body: JSON.stringify(payload),
+        });
+      }
+      return api('/products', {
         method: 'POST',
-        body: JSON.stringify({
-          ...form,
-          sku: form.sku || undefined,
-          barcode: form.barcode || undefined,
-        }),
-      }),
+        body: JSON.stringify(payload),
+      });
+    },
     onSuccess: () => {
-      toast.success('Produit créé');
+      toast.success(editingId ? 'Produit mis à jour' : 'Produit créé');
       setOpen(false);
+      setEditingId(null);
+      setForm({
+        name: '',
+        sku: '',
+        barcode: '',
+        image: '',
+        categoryId: cats[0]?.id ?? '',
+        unit: 'pièce',
+        purchasePrice: 0,
+        salePrice: 0,
+        minimumStock: 0,
+      });
       void qc.invalidateQueries({ queryKey: ['products'] });
     },
     onError: (e: Error) => toast.error(e.message),
@@ -74,7 +97,19 @@ export function ProductsPage() {
         actions={
           <Button
             onClick={() => {
-              setForm((f) => ({ ...f, categoryId: cats[0]?.id ?? '' }));
+              setEditingId(null);
+              setForm((f) => ({
+                ...f,
+                name: '',
+                sku: '',
+                barcode: '',
+                image: '',
+                categoryId: cats[0]?.id ?? '',
+                unit: 'pièce',
+                purchasePrice: 0,
+                salePrice: 0,
+                minimumStock: 0,
+              }));
               setOpen(true);
             }}
           >
@@ -99,10 +134,21 @@ export function ProductsPage() {
           {(data?.items ?? []).map((p) => (
             <tr key={p.id}>
               <Td>
-                <Link className="font-semibold text-primary hover:underline" to={`/stock/produits/${p.id}`}>
-                  {p.name}
-                </Link>{' '}
-                {num(p.currentStock) <= num(p.minimumStock) ? <Badge variant="warning">Stock faible</Badge> : null}
+                <div className="flex items-center gap-3">
+                  {p.image ? (
+                    <img src={p.image} alt={p.name} className="h-10 w-10 rounded-md border object-cover" />
+                  ) : (
+                    <div className="flex h-10 w-10 items-center justify-center rounded-md border bg-muted text-xs font-semibold text-muted-foreground">
+                      {p.name.slice(0, 1).toUpperCase()}
+                    </div>
+                  )}
+                  <div>
+                    <Link className="font-semibold text-primary hover:underline" to={`/stock/produits/${p.id}`}>
+                      {p.name}
+                    </Link>
+                    {num(p.currentStock) <= num(p.minimumStock) ? <Badge className="ml-2" variant="warning">Stock faible</Badge> : null}
+                  </div>
+                </div>
               </Td>
               <Td>{p.sku}</Td>
               <Td>{p.category.name}</Td>
@@ -111,18 +157,38 @@ export function ProductsPage() {
               </Td>
               <Td>{formatMoney(num(p.purchasePrice))}</Td>
               <Td>{formatMoney(num(p.salePrice))}</Td>
-              <Td>{p.active ? null : <Badge variant="outline">Inactif</Badge>}</Td>
+              <Td className="space-x-2">
+                <Button size="sm" variant="outline" onClick={() => {
+                  setEditingId(p.id);
+                  setForm({
+                    name: p.name,
+                    sku: p.sku,
+                    barcode: p.barcode ?? '',
+                    image: p.image ?? '',
+                    categoryId: p.categoryId,
+                    unit: p.unit,
+                    purchasePrice: Number(p.purchasePrice),
+                    salePrice: Number(p.salePrice),
+                    minimumStock: Number(p.minimumStock),
+                  });
+                  setOpen(true);
+                }}>
+                  Modifier
+                </Button>
+                {p.active ? null : <Badge variant="outline">Inactif</Badge>}
+              </Td>
             </tr>
           ))}
         </tbody>
       </Table>
       <Modal.Root open={open} onOpenChange={setOpen}>
         <ModalContent>
-          <Modal.Title className="text-lg font-semibold">Nouveau produit</Modal.Title>
+          <Modal.Title className="text-lg font-semibold">{editingId ? 'Modifier le produit' : 'Nouveau produit'}</Modal.Title>
           <div className="mt-4 grid gap-3">
             <Field label="Nom" value={form.name} onChange={(v) => setForm({ ...form, name: v })} />
             <Field label="SKU (automatique)" value={form.sku} onChange={(v) => setForm({ ...form, sku: v })} placeholder="Généré automatiquement si vide" />
             <Field label="Code-barres (automatique)" value={form.barcode} onChange={(v) => setForm({ ...form, barcode: v })} placeholder="Généré automatiquement si vide" />
+            <Field label="Image URL" value={form.image} onChange={(v) => setForm({ ...form, image: v })} placeholder="https://..." />
             <div>
               <Label>Catégorie</Label>
               <Select value={form.categoryId} onValueChange={(categoryId) => setForm({ ...form, categoryId })}>
@@ -141,9 +207,8 @@ export function ProductsPage() {
             <Field label="Unité" value={form.unit} onChange={(v) => setForm({ ...form, unit: v })} />
             <Field label="Prix d’achat (CMP initial)" value={String(form.purchasePrice)} onChange={(v) => setForm({ ...form, purchasePrice: Number(v) })} />
             <Field label="Prix de vente" value={String(form.salePrice)} onChange={(v) => setForm({ ...form, salePrice: Number(v) })} />
-            <Field label="Stock initial" value={String(form.currentStock)} onChange={(v) => setForm({ ...form, currentStock: Number(v) })} />
-            <Field label="Stock minimum" value={String(form.minimumStock)} onChange={(v) => setForm({ ...form, minimumStock: Number(v) })} />
-            <Button onClick={() => mut.mutate()}>Enregistrer</Button>
+            <Field label="Stock minimum" value={String(form.minimumStock)} onChange={()=>{}} disabled />
+            <Button onClick={() => mut.mutate()}>{editingId ? 'Mettre à jour' : 'Enregistrer'}</Button>
           </div>
         </ModalContent>
       </Modal.Root>
@@ -151,11 +216,11 @@ export function ProductsPage() {
   );
 }
 
-function Field({ label, value, onChange, placeholder }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string }) {
+function Field({ label, value, onChange, placeholder, disabled }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string; disabled?: boolean }) {
   return (
     <div>
       <Label>{label}</Label>
-      <Input className="mt-1" value={value} placeholder={placeholder} onChange={(e) => onChange(e.target.value)} />
+      <Input className="mt-1" value={value} placeholder={placeholder} onChange={(e) => onChange(e.target.value)} disabled={disabled} />
     </div>
   );
 }

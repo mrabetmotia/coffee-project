@@ -25,7 +25,7 @@ type Sale = {
     returnedQuantity: string;
     unitPrice: string;
     lineTotal: string;
-    product: { name: string };
+    product: { name: string, image: string };
   }[];
   payments: { id: string; amount: string; method: string; createdAt: string }[];
   invoice: { id: string };
@@ -107,7 +107,10 @@ export function SaleDetailPage() {
               <tbody>
                 {data.items.map((i) => (
                   <tr key={i.id}>
-                    <Td>{i.product.name}</Td>
+                    <Td className="flex items-center gap-2">
+                      <img src={i.product?.image || "../images/undefined.png"} alt={i.product.name} className="h-10 w-10 rounded-md border object-cover" />
+                      {i.product.name}
+                    </Td>
                     <Td>{formatQty(num(i.quantity))}</Td>
                     <Td>{formatQty(num(i.returnedQuantity))}</Td>
                     <Td>{formatMoney(num(i.unitPrice))}</Td>

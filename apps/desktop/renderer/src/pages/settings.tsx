@@ -74,7 +74,7 @@ export function SettingsPage() {
   const [newPassword, setNew] = useState('');
 
   return (
-    <div className="max-w-3xl space-y-6">
+    <div className="space-y-6">
       <PageHeader title="Paramètres" />
       <Card>
         <CardHeader>
@@ -113,14 +113,14 @@ export function SettingsPage() {
             />
             Sauvegarde automatique
           </label>
-          <Button onClick={() => save.mutate()}>Enregistrer</Button>
+          <Button className='w-fit' onClick={() => save.mutate()}>Enregistrer</Button>
         </CardContent>
       </Card>
       <Card>
         <CardHeader>
           <CardTitle>Sauvegarde / Restauration</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-3 space-x-3">
           <Button onClick={() => backup.mutate()}>Sauvegarder maintenant</Button>
           <Button variant="outline" onClick={() => void pickRestore()}>
             Restaurer un fichier…
