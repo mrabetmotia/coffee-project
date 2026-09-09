@@ -145,10 +145,9 @@ export function AppLayout() {
             <div><p className="text-sm font-semibold">{t(currentLabel)}</p><p className="hidden text-xs text-muted-foreground sm:block">{t('Gestion commerciale')} <span className="mx-1">·</span> {t('hors ligne')}</p></div>
           </div>
           <div className="flex items-center gap-2">
-            <select aria-label="Language" value={language} onChange={(event) => setLanguage(event.target.value as 'fr' | 'en' | 'ar')} className="h-9 w-[58px] rounded-lg border border-input bg-card px-2 text-xs font-semibold">
+            <select aria-label="Language" value={language} onChange={(event) => setLanguage(event.target.value as 'fr' | 'en')} className="h-9 w-[58px] rounded-lg border border-input bg-card px-2 text-xs font-semibold">
               <option value="fr">{languageNames.fr}</option>
               <option value="en">{languageNames.en}</option>
-              <option value="ar">{languageNames.ar}</option>
               <option value="de">{languageNames.de}</option>
               <option value="it">{languageNames.it}</option>
               <option value="tr">{languageNames.tr}</option>

@@ -32,7 +32,7 @@ function getApiUrl() {
     );
   }
 
-  return 'http://127.0.0.1:47821/api';
+  return 'https://coffee-project-zltx.onrender.com/api';
 }
 
 function createWindow() {
@@ -46,7 +46,8 @@ function createWindow() {
     show: false,
     title: 'CaféStock',
     autoHideMenuBar: true,
-
+    icon: join(__dirname, '../../build/icon.ico'),
+    
     webPreferences: {
       preload: join(__dirname, '../preload/preload.js'),
       contextIsolation: true,

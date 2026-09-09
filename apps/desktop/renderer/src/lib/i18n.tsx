@@ -570,10 +570,10 @@ const translations: Record<Language, Dictionary> = {
 const languageNames: Record<Language, string> = {
   fr: 'FR',
   en: 'EN',
-  ar: 'ع',
   de: 'DE',
   it: 'IT',
   tr: 'TR',
+  ar: 'ع',
 };
 
 const originalText = new WeakMap<Text, string>();
