@@ -1,6 +1,7 @@
 import { app, BrowserWindow, ipcMain, shell, dialog } from 'electron';
 import { join } from 'path';
 import { existsSync, mkdirSync } from 'fs';
+import { autoUpdater } from 'electron-updater';
 
 let mainWindow: BrowserWindow | null = null;
 
@@ -120,8 +121,32 @@ function createWindow() {
   });
 }
 
+function setupAutoUpdater() {
+  if (!app.isPackaged) {
+    return;
+  }
+
+  autoUpdater.autoDownload = true;
+  autoUpdater.autoInstallOnAppQuit = true;
+
+  autoUpdater.on('update-available', () => {
+    console.log('[updater] Update available');
+  });
+
+  autoUpdater.on('update-downloaded', () => {
+    console.log('[updater] Update downloaded');
+  });
+
+  autoUpdater.on('error', (error) => {
+    console.error('[updater] Error:', error);
+  });
+
+  void autoUpdater.checkForUpdates();
+}
+
 app.whenReady().then(() => {
   createWindow();
+  setupAutoUpdater();
 });
 
 app.on('window-all-closed', () => {

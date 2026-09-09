@@ -29,5 +29,8 @@
   },
   "engines": {
     "node": ">=20"
+  },
+  "allowScripts": {
+    "electron@35.1.5": true
   }
 }
