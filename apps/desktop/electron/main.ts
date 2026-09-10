@@ -4,6 +4,25 @@ import { existsSync, mkdirSync } from 'fs';
 import { autoUpdater } from 'electron-updater';
 
 let mainWindow: BrowserWindow | null = null;
+let latestAvailableVersion = app.getVersion();
+
+type UpdaterEvent =
+  | 'checking-for-update'
+  | 'update-available'
+  | 'update-not-available'
+  | 'download-progress'
+  | 'update-downloaded'
+  | 'update-error';
+
+type UpdaterPayload = {
+  version?: string;
+  progress?: number;
+  message?: string;
+};
+
+function emitUpdaterEvent(type: UpdaterEvent, payload: UpdaterPayload = {}) {
+  mainWindow?.webContents.send('updater-event', { type, ...payload });
+}
 
 function userPaths() {
   const root = app.getPath('userData');
@@ -32,11 +51,14 @@ function getApiUrl() {
     );
   }
 
-  return 'https://coffee-project-zltx.onrender.com/api';
+  return 'http://127.0.0.1:47821/api';
 }
 
 function createWindow() {
   const paths = userPaths();
+  const iconPath = app.isPackaged
+    ? join(process.resourcesPath, 'icon.ico')
+    : join(__dirname, '../../build/icon.ico');
 
   mainWindow = new BrowserWindow({
     width: 1440,
@@ -46,8 +68,8 @@ function createWindow() {
     show: false,
     title: 'CaféStock',
     autoHideMenuBar: true,
-    icon: join(__dirname, '../../build/icon.ico'),
-    
+    icon: iconPath,
+
     webPreferences: {
       preload: join(__dirname, '../preload/preload.js'),
       contextIsolation: true,
@@ -120,6 +142,39 @@ function createWindow() {
 
     return res.canceled ? null : res.filePaths[0];
   });
+
+  ipcMain.handle('updater:check', async () => {
+    if (!app.isPackaged) return { ok: true, skipped: true };
+    try {
+      const result = await autoUpdater.checkForUpdates();
+      return { ok: true, skipped: false, result };
+    } catch (error) {
+      console.error('[updater] checkForUpdates failed:', error);
+      return { ok: false, skipped: false, error: (error as Error).message };
+    }
+  });
+
+  ipcMain.handle('updater:download', async () => {
+    if (!app.isPackaged) return { ok: true, skipped: true };
+    try {
+      const result = await autoUpdater.downloadUpdate();
+      return { ok: true, result };
+    } catch (error) {
+      console.error('[updater] downloadUpdate failed:', error);
+      return { ok: false, error: (error as Error).message };
+    }
+  });
+
+  ipcMain.handle('updater:install', async () => {
+    if (!app.isPackaged) return { ok: true, skipped: true };
+    try {
+      autoUpdater.quitAndInstall(false, true);
+      return { ok: true };
+    } catch (error) {
+      console.error('[updater] quitAndInstall failed:', error);
+      return { ok: false, error: (error as Error).message };
+    }
+  });
 }
 
 function setupAutoUpdater() {
@@ -127,22 +182,55 @@ function setupAutoUpdater() {
     return;
   }
 
-  autoUpdater.autoDownload = true;
-  autoUpdater.autoInstallOnAppQuit = true;
+  const currentVersion = app.getVersion();
+  console.log(`[updater] Current version: ${currentVersion}`);
 
-  autoUpdater.on('update-available', () => {
-    console.log('[updater] Update available');
+  autoUpdater.autoDownload = false;
+  autoUpdater.autoInstallOnAppQuit = false;
+
+  autoUpdater.on('checking-for-update', () => {
+    console.log('[updater] Checking for updates...');
+    emitUpdaterEvent('checking-for-update');
   });
 
-  autoUpdater.on('update-downloaded', () => {
-    console.log('[updater] Update downloaded');
+  autoUpdater.on('update-available', (info) => {
+    const version = info?.version ?? 'unknown';
+    latestAvailableVersion = version;
+    console.log(`[updater] Update available: ${version}`);
+    emitUpdaterEvent('update-available', { version });
+  });
+
+  autoUpdater.on('update-not-available', () => {
+    console.log('[updater] Update not available');
+    emitUpdaterEvent('update-not-available');
+  });
+
+  autoUpdater.on('download-progress', (progressObj) => {
+    const percentage = Math.round(progressObj.percent ?? 0);
+    console.log(`[updater] Download progress: ${percentage}%`);
+    emitUpdaterEvent('download-progress', {
+      version: latestAvailableVersion,
+      progress: percentage,
+      message: `${app.getName()} v${latestAvailableVersion}`,
+    });
+  });
+
+  autoUpdater.on('update-downloaded', (info) => {
+    const version = info?.version ?? latestAvailableVersion;
+    console.log(`[updater] Update downloaded: ${version}`);
+    emitUpdaterEvent('update-downloaded', { version });
   });
 
   autoUpdater.on('error', (error) => {
-    console.error('[updater] Error:', error);
+    console.error('[updater] Update error:', error);
+    emitUpdaterEvent('update-error', {
+      message: 'The update could not be downloaded.',
+    });
   });
 
-  void autoUpdater.checkForUpdates();
+  setTimeout(() => {
+    void autoUpdater.checkForUpdates();
+  }, 1500);
 }
 
 app.whenReady().then(() => {

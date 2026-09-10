@@ -1,6 +1,6 @@
 const TOKEN_KEY = 'cafestock-token';
 
-let apiBase = import.meta.env.VITE_API_URL ?? 'https://coffee-project-zltx.onrender.com/api';
+let apiBase = import.meta.env.VITE_API_URL ?? 'http://127.0.0.1:47821/api';
 
 export function setApiBase(url: string) {
   apiBase = url;

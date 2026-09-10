@@ -82,7 +82,7 @@ export function NewSalePage() {
 
   const mutation = useMutation({
     mutationFn: () =>
-      api('/sales', {
+      api<{ id: string }>('/sales', {
         method: 'POST',
         body: JSON.stringify({
           clientId: clientId || undefined,
@@ -92,7 +92,7 @@ export function NewSalePage() {
           items: cart.map((l) => ({ productId: l.product.id, quantity: l.quantity, unitPrice: l.unitPrice })),
         }),
       }),
-    onSuccess: (sale: { id: string }) => {
+    onSuccess: (sale) => {
       toast.success('Vente enregistrée');
       navigate(`/ventes/${sale.id}`);
     },

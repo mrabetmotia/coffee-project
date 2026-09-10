@@ -1,9 +1,9 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 
-type Language = 'fr' | 'en' | 'ar' | 'de' | 'it' | 'tr';
+export type Language = 'fr' | 'en' | 'ar' | 'de' | 'it' | 'tr';
 type Dictionary = Record<string, string>;
 
-const translations: Record<Language, Dictionary> = {
+export const translations: Record<Language, Dictionary> = {
   fr: {},
 
   en: {
@@ -16,7 +16,6 @@ const translations: Record<Language, Dictionary> = {
     Produits: 'Products',
     Catégories: 'Categories',
     Mouvements: 'Movements',
-    'Stock faible': 'Low stock',
     Inventaire: 'Stock count',
     'Entrées Stock': 'Stock entries',
     'Nouvelle entrée': 'New entry',
@@ -117,6 +116,15 @@ const translations: Record<Language, Dictionary> = {
     Devise: 'Currency',
     'Sauvegarde / Restauration': 'Backup / Restore',
     'Sauvegarder maintenant': 'Back up now',
+    Notifications: 'Notifications',
+    'Nouvelle version disponible': 'New version available',
+    'Mettre à jour': 'Update',
+    'Téléchargement de la mise à jour': 'Downloading update',
+    'Mise à jour prête': 'Update ready',
+    'Redémarrer maintenant': 'Restart now',
+    'Échec de la mise à jour': 'Update failed',
+    'Tout lire': 'Mark all as read',
+    'Aucune notification': 'No notifications',
   },
 
   ar: { 
@@ -129,7 +137,6 @@ const translations: Record<Language, Dictionary> = {
     Produits: 'المنتجات', 
     Catégories: 'الفئات', 
     Mouvements: 'الحركات', 
-    'Stock faible': 'مخزون منخفض', 
     Inventaire: 'جرد المخزون', 
     'Entrées Stock': 'إدخالات المخزون', 
     'Nouvelle entrée': 'إدخال جديد', 
@@ -220,7 +227,16 @@ const translations: Record<Language, Dictionary> = {
     Entreprise: 'الشركة', 
     Devise: 'العملة', 
     'Sauvegarde / Restauration': 'النسخ الاحتياطي والاستعادة', 
-    'Sauvegarder maintenant': 'النسخ الاحتياطي الآن', 
+    'Sauvegarder maintenant': 'النسخ الاحتياطي الآن',
+    Notifications: 'الإشعارات',
+    'Nouvelle version disponible': 'نسخة جديدة متاحة',
+    'Mettre à jour': 'تحديث',
+    'Téléchargement de la mise à jour': 'جارٍ تنزيل التحديث',
+    'Mise à jour prête': 'التحديث جاهز',
+    'Redémarrer maintenant': 'إعادة التشغيل الآن',
+    'Échec de la mise à jour': 'فشل التحديث',
+    'Tout lire': 'تحديد الكل كمقروء',
+    'Aucune notification': 'لا توجد إشعارات',
   },   
 
   de: {
@@ -233,7 +249,6 @@ const translations: Record<Language, Dictionary> = {
     Produits: 'Produkte',
     Catégories: 'Kategorien',
     Mouvements: 'Bewegungen',
-    'Stock faible': 'Niedriger Lagerbestand',
     Inventaire: 'Inventur',
     'Entrées Stock': 'Wareneingänge',
     'Nouvelle entrée': 'Neuer Wareneingang',
@@ -334,6 +349,15 @@ const translations: Record<Language, Dictionary> = {
     Devise: 'Währung',
     'Sauvegarde / Restauration': 'Sicherung / Wiederherstellung',
     'Sauvegarder maintenant': 'Jetzt sichern',
+    Notifications: 'Benachrichtigungen',
+    'Nouvelle version disponible': 'Neue Version verfügbar',
+    'Mettre à jour': 'Aktualisieren',
+    'Téléchargement de la mise à jour': 'Update wird heruntergeladen',
+    'Mise à jour prête': 'Update bereit',
+    'Redémarrer maintenant': 'Jetzt neu starten',
+    'Échec de la mise à jour': 'Update fehlgeschlagen',
+    'Tout lire': 'Alle als gelesen markieren',
+    'Aucune notification': 'Keine Benachrichtigungen',
   },
 
   it: {
@@ -346,7 +370,6 @@ const translations: Record<Language, Dictionary> = {
     Produits: 'Prodotti',
     Catégories: 'Categorie',
     Mouvements: 'Movimenti',
-    'Stock faible': 'Scorte basse',
     Inventaire: 'Inventario',
     'Entrées Stock': 'Entrate di magazzino',
     'Nouvelle entrée': 'Nuova entrata',
@@ -449,6 +472,15 @@ const translations: Record<Language, Dictionary> = {
     Devise: 'Valuta',
     'Sauvegarde / Restauration': 'Backup / Ripristino',
     'Sauvegarder maintenant': 'Esegui backup ora',
+    Notifications: 'Notifiche',
+    'Nouvelle version disponible': 'Nuova versione disponibile',
+    'Mettre à jour': 'Aggiorna',
+    'Téléchargement de la mise à jour': 'Download dell\'aggiornamento',
+    'Mise à jour prête': 'Aggiornamento pronto',
+    'Redémarrer maintenant': 'Riavvia ora',
+    'Échec de la mise à jour': 'Aggiornamento fallito',
+    'Tout lire': 'Segna tutto come letto',
+    'Aucune notification': 'Nessuna notifica',
   },
 
   tr: {
@@ -461,7 +493,6 @@ const translations: Record<Language, Dictionary> = {
     Produits: 'Ürünler',
     Catégories: 'Kategoriler',
     Mouvements: 'Hareketler',
-    'Stock faible': 'Düşük stok',
     Inventaire: 'Stok sayımı',
     'Entrées Stock': 'Stok girişleri',
     'Nouvelle entrée': 'Yeni giriş',
@@ -564,6 +595,15 @@ const translations: Record<Language, Dictionary> = {
     Devise: 'Para birimi',
     'Sauvegarde / Restauration': 'Yedekleme / Geri yükleme',
     'Sauvegarder maintenant': 'Şimdi yedekle',
+    Notifications: 'Bildirimler',
+    'Nouvelle version disponible': 'Yeni sürüm mevcut',
+    'Mettre à jour': 'Güncelle',
+    'Téléchargement de la mise à jour': 'Güncelleme indiriliyor',
+    'Mise à jour prête': 'Güncelleme hazır',
+    'Redémarrer maintenant': 'Şimdi yeniden başlat',
+    'Échec de la mise à jour': 'Güncelleme başarısız',
+    'Tout lire': 'Tümünü okundu olarak işaretle',
+    'Aucune notification': 'Bildirim yok',
   },
 };
 
@@ -623,7 +663,7 @@ const LanguageContext = createContext<{
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [language, setLanguage] = useState<Language>(() => {
     const saved = localStorage.getItem('cafestock-language');
-    return saved === 'en' || saved === 'ar' || saved === 'fr' ? saved : 'fr';
+    return saved === 'en' || saved === 'ar' || saved === 'fr' || saved === 'de' || saved === 'it' || saved === 'tr' ? saved : 'fr';
   });
 
   useEffect(() => {

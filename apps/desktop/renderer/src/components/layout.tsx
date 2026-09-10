@@ -28,6 +28,7 @@ import { useTheme } from '@/lib/theme';
 import { setToken } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/lib/i18n';
+import { NotificationCenter } from '@/components/notification-center';
 
 const nav = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -145,13 +146,15 @@ export function AppLayout() {
             <div><p className="text-sm font-semibold">{t(currentLabel)}</p><p className="hidden text-xs text-muted-foreground sm:block">{t('Gestion commerciale')} <span className="mx-1">·</span> {t('hors ligne')}</p></div>
           </div>
           <div className="flex items-center gap-2">
-            <select aria-label="Language" value={language} onChange={(event) => setLanguage(event.target.value as 'fr' | 'en')} className="h-9 w-[58px] rounded-lg border border-input bg-card px-2 text-xs font-semibold">
+            <select aria-label="Language" value={language} onChange={(event) => setLanguage(event.target.value as 'fr' | 'en' | 'ar' | 'de' | 'it' | 'tr')} className="h-9 w-[58px] rounded-lg border border-input bg-card px-2 text-xs font-semibold">
               <option value="fr">{languageNames.fr}</option>
               <option value="en">{languageNames.en}</option>
+              <option value="ar">{languageNames.ar}</option>
               <option value="de">{languageNames.de}</option>
               <option value="it">{languageNames.it}</option>
               <option value="tr">{languageNames.tr}</option>
             </select>
+            <NotificationCenter />
             <button className="rounded-lg p-2.5 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground" onClick={toggle} aria-label="Thème">
               {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </button>

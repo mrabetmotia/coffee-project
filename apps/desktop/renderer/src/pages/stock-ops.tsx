@@ -5,6 +5,7 @@ import { api } from '@/lib/api';
 import { PageHeader, formatMoney, formatQty } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Pagination } from '@/components/ui/pagination';
 import { Table, THead, Th, Td } from '@/components/ui/table';
 import { num } from '@/lib/utils';
 
