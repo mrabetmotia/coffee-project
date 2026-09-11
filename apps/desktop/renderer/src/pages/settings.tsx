@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { SettingsPageSkeleton } from '@/components/ui/skeleton';
 
 type Settings = {
   companyName: string;
@@ -20,7 +21,7 @@ type Settings = {
 
 export function SettingsPage() {
   const qc = useQueryClient();
-  const { data } = useQuery({ queryKey: ['settings'], queryFn: () => api<Settings>('/settings') });
+  const { data, isLoading } = useQuery({ queryKey: ['settings'], queryFn: () => api<Settings>('/settings') });
   const [form, setForm] = useState<Partial<Settings>>({});
   const merged = { ...data, ...form };
   const save = useMutation({
@@ -72,6 +73,8 @@ export function SettingsPage() {
   });
   const [currentPassword, setCurrent] = useState('');
   const [newPassword, setNew] = useState('');
+
+  if (isLoading) return <SettingsPageSkeleton />;
 
   return (
     <div className="space-y-6">

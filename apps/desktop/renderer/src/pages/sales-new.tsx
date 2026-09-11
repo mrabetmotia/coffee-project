@@ -100,7 +100,7 @@ export function NewSalePage() {
   });
 
   const canSubmit = cart.length > 0 && !mutation.isPending;
-  console.log("results", results)
+
   return (
     <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
       <div>

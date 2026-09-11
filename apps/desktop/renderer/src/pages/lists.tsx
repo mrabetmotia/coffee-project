@@ -7,11 +7,12 @@ import { Table, THead, Th, Td } from '@/components/ui/table';
 import { Pagination } from '@/components/ui/pagination';
 import { num } from '@/lib/utils';
 import { Link } from 'react-router-dom';
+import { CashPageSkeleton, GenericPageSkeleton } from '@/components/ui/skeleton';
 
 export function ReturnsPage() {
   const [page, setPage] = useState(0);
   const take = 12;
-  const { data } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ['returns', page],
     queryFn: () =>
       api<{
@@ -25,6 +26,8 @@ export function ReturnsPage() {
         total: number;
       }>(`/sales/returns?skip=${page * take}&take=${take}`),
   });
+  if (isLoading) return <GenericPageSkeleton rows={5} cols={4} />;
+
   return (
     <div>
       <PageHeader title="Retours" />
@@ -56,7 +59,7 @@ export function ReturnsPage() {
 export function MovementsPage() {
   const [page, setPage] = useState(0);
   const take = 12;
-  const { data } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ['movements', page],
     queryFn: () =>
       api<{
@@ -74,6 +77,8 @@ export function MovementsPage() {
         total: number;
       }>(`/stock/movements?skip=${page * take}&take=${take}`),
   });
+  if (isLoading) return <GenericPageSkeleton rows={5} cols={7} />;
+
   return (
     <div>
       <PageHeader title="Mouvements de stock" />
@@ -116,11 +121,13 @@ export function MovementsPage() {
 }
 
 export function LowStockPage() {
-  const { data = [] } = useQuery({
+  const { data = [], isLoading } = useQuery({
     queryKey: ['low-stock'],
     queryFn: () =>
       api<{ id: string; name: string; image: string; sku: string; currentStock: string; minimumStock: string }[]>('/stock/low'),
   });
+  if (isLoading) return <GenericPageSkeleton rows={5} cols={4} />;
+
   return (
     <div>
       <PageHeader title="Stock faible" subtitle="Produits au seuil ou en dessous" />
@@ -158,7 +165,7 @@ export function LowStockPage() {
 export function CashPage() {
   const [page, setPage] = useState(0);
   const take = 12;
-  const { data } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ['cash', page],
     queryFn: () =>
       api<{
@@ -170,6 +177,8 @@ export function CashPage() {
         transactions: { id: string; type: string; amount: string; createdAt: string; notes: string | null }[];
       }>(`/cash?skip=${page * take}&take=${take}`),
   });
+  if (isLoading) return <CashPageSkeleton />;
+
   return (
     <div>
       <PageHeader title="Caisse" subtitle="Encaissements espèces uniquement" />
@@ -214,7 +223,7 @@ export function CashPage() {
 export function InvoicesPage() {
   const [page, setPage] = useState(0);
   const take = 12;
-  const { data } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ['invoices', page],
     queryFn: () =>
       api<{
@@ -227,6 +236,8 @@ export function InvoicesPage() {
         total: number;
       }>(`/invoices?skip=${page * take}&take=${take}`),
   });
+  if (isLoading) return <GenericPageSkeleton rows={5} cols={4} />;
+
   return (
     <div>
       <PageHeader title="Factures" />

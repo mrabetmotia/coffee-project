@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Table, THead, Th, Td } from '@/components/ui/table';
 import { num } from '@/lib/utils';
 import { useState } from 'react';
+import { SaleDetailSkeleton } from '@/components/ui/skeleton';
 
 type Sale = {
   id: string;
@@ -75,46 +76,7 @@ export function SaleDetailPage() {
   });
 
   if (!data) {
-    return (
-      <div className="space-y-4" aria-live="polite">
-        <div className="flex items-center justify-between gap-4">
-          <div className="space-y-2">
-            <div className="h-7 w-40 animate-pulse rounded-md bg-muted" />
-            <div className="h-4 w-48 animate-pulse rounded-md bg-muted/80" />
-          </div>
-          <div className="h-9 w-32 animate-pulse rounded-md bg-muted" />
-        </div>
-
-        <div className="grid gap-4 lg:grid-cols-3">
-          <Card className="lg:col-span-2">
-            <CardHeader>
-              <div className="h-4 w-24 animate-pulse rounded bg-muted" />
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {Array.from({ length: 5 }).map((_, index) => (
-                  <div key={index} className="h-12 animate-pulse rounded-md bg-muted/70" />
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          <div className="space-y-4">
-            {Array.from({ length: 2 }).map((_, index) => (
-              <Card key={index}>
-                <CardHeader>
-                  <div className="h-4 w-24 animate-pulse rounded bg-muted" />
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="h-4 w-full animate-pulse rounded bg-muted/80" />
-                  <div className="h-4 w-3/4 animate-pulse rounded bg-muted/80" />
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
+    return <SaleDetailSkeleton />;
   }
 
   return (

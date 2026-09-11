@@ -183,11 +183,10 @@ function setupAutoUpdater() {
   }
 
   const currentVersion = app.getVersion();
-  console.log(`[updater] Current version: ${currentVersion}`);
 
   autoUpdater.autoDownload = false;
   autoUpdater.autoInstallOnAppQuit = false;
-  
+
   autoUpdater.setFeedURL({
     provider: 'github',
     owner: 'mrabetmotia',
@@ -197,25 +196,21 @@ function setupAutoUpdater() {
   });
 
   autoUpdater.on('checking-for-update', () => {
-    console.log('[updater] Checking for updates...');
     emitUpdaterEvent('checking-for-update');
   });
 
   autoUpdater.on('update-available', (info) => {
     const version = info?.version ?? 'unknown';
     latestAvailableVersion = version;
-    console.log(`[updater] Update available: ${version}`);
     emitUpdaterEvent('update-available', { version });
   });
 
   autoUpdater.on('update-not-available', () => {
-    console.log('[updater] Update not available');
     emitUpdaterEvent('update-not-available');
   });
 
   autoUpdater.on('download-progress', (progressObj) => {
     const percentage = Math.round(progressObj.percent ?? 0);
-    console.log(`[updater] Download progress: ${percentage}%`);
     emitUpdaterEvent('download-progress', {
       version: latestAvailableVersion,
       progress: percentage,
@@ -225,7 +220,6 @@ function setupAutoUpdater() {
 
   autoUpdater.on('update-downloaded', (info) => {
     const version = info?.version ?? latestAvailableVersion;
-    console.log(`[updater] Update downloaded: ${version}`);
     emitUpdaterEvent('update-downloaded', { version });
   });
 

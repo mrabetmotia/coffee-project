@@ -9,6 +9,58 @@ import { roundQty, toNumber } from '../common/decimal';
 export class StockService {
   constructor(private readonly prisma: PrismaService) {}
 
+  async reconcileLowStockNotifications(db: DbClient, productId: string) {
+    const product = await db.product.findUnique({ where: { id: productId } });
+    if (!product) return;
+
+    const users = await db.user.findMany({ select: { id: true } });
+    if (!users.length) return;
+
+    const userIds = users.map((user) => user.id);
+    const currentStock = toNumber(product.currentStock);
+    const minimumStock = toNumber(product.minimumStock);
+    const isLowStock = currentStock <= minimumStock;
+    const lowStockPredicate = {
+      type: 'low_stock',
+      userId: { in: userIds },
+      metadata: {
+        path: ['productId'],
+        equals: product.id,
+      },
+    } as const;
+
+    if (isLowStock) {
+      const exists = await db.notification.findFirst({ where: lowStockPredicate });
+      if (exists) return;
+
+      await Promise.all(
+        users.map((user) =>
+          db.notification.create({
+            data: {
+              id: `low-stock-${user.id}-${product.id}`,
+              userId: user.id,
+              type: 'low_stock',
+              title: 'Stock faible',
+              message: `${product.name} — Stock actuel: ${currentStock} / Stock minimum: ${minimumStock}`,
+              actionLabel: 'Voir le stock',
+              actionUrl: `/stock/produits/${product.id}`,
+              persistent: true,
+              metadata: {
+                productId: product.id,
+                productName: product.name,
+                currentStock,
+                minimumStock,
+              },
+            },
+          }),
+        ),
+      );
+      return;
+    }
+
+    await db.notification.deleteMany({ where: lowStockPredicate });
+  }
+
   async applyMovement(
     db: DbClient,
     params: {
@@ -47,6 +99,7 @@ export class StockService {
         reference: params.reference,
       },
     });
+    await this.reconcileLowStockNotifications(db, product.id);
     return { stockBefore, stockAfter, product };
   }
 

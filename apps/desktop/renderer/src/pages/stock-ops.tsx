@@ -8,11 +8,12 @@ import { Input } from '@/components/ui/input';
 import { Pagination } from '@/components/ui/pagination';
 import { Table, THead, Th, Td } from '@/components/ui/table';
 import { num } from '@/lib/utils';
+import { InventoryPageSkeleton, GenericPageSkeleton } from '@/components/ui/skeleton';
 
 type Product = { id: string; name: string; sku: string; currentStock: string; purchasePrice: string; image: string };
 
 export function InventoryPage() {
-  const { data } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ['products-all'],
     queryFn: () => api<{ items: Product[] }>('/products?take=500'),
   });
@@ -32,6 +33,8 @@ export function InventoryPage() {
     onSuccess: () => toast.success('Inventaire enregistré'),
     onError: (e: Error) => toast.error(e.message),
   });
+  if (isLoading) return <InventoryPageSkeleton />;
+
   return (
     <div>
       <PageHeader
@@ -186,7 +189,7 @@ export function NewEntryPage() {
 export function EntriesHistoryPage() {
   const [page, setPage] = useState(0);
   const take = 12;
-  const { data } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ['entries', page],
     queryFn: () =>
       api<{
@@ -200,6 +203,8 @@ export function EntriesHistoryPage() {
         total: number;
       }>(`/stock-entries?skip=${page * take}&take=${take}`),
   });
+  if (isLoading) return <GenericPageSkeleton rows={5} cols={4} />;
+
   return (
     <div>
       <PageHeader title="Historique des entrées" />

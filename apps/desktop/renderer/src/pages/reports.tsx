@@ -6,13 +6,14 @@ import { api } from '@/lib/api';
 import { PageHeader, formatMoney } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ReportsPageSkeleton } from '@/components/ui/skeleton';
 
 export function ReportsPage() {
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
   const qs = `from=${from}&to=${to}`;
 
-  const { data: sales } = useQuery({
+  const { data: sales, isLoading: salesLoading } = useQuery({
     queryKey: ['rep-sales', from, to],
     queryFn: () => api<{ count: number; revenue: number; profit: number; paid: number; remaining: number }>(`/reports/sales?${qs}`),
   });
@@ -48,6 +49,8 @@ export function ReportsPage() {
     },
   });
 
+
+  if (salesLoading) return <ReportsPageSkeleton />;
 
   return (
     <div className="space-y-6">

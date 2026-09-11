@@ -9,6 +9,7 @@ import { Table, THead, Th, Td } from '@/components/ui/table';
 import { num } from '@/lib/utils';
 import { useState } from 'react';
 import { Pagination } from '@/components/ui/pagination';
+import { GenericPageSkeleton } from '@/components/ui/skeleton';
 
 type Sale = {
   id: string;
@@ -39,6 +40,8 @@ export function SalesHistoryPage() {
   const statusVariant = (s: PaymentStatus) =>
     s === 'PAID' ? 'success' : s === 'PARTIAL' ? 'warning' : 'destructive';
 
+  if (isLoading) return <GenericPageSkeleton rows={6} cols={8} />;
+
   return (
     <div>
       <PageHeader title="Historique des ventes" />
@@ -67,7 +70,13 @@ export function SalesHistoryPage() {
         <tbody>
           {isLoading ? (
             <tr>
-              <Td colSpan={8} className="py-12 text-center text-muted-foreground">Chargement des ventes…</Td>
+              <Td colSpan={8} className="py-5">
+                <div className="space-y-3">
+                  {Array.from({ length: 5 }).map((_, index) => (
+                    <div key={index} className="h-12 animate-pulse rounded-md bg-muted/70" />
+                  ))}
+                </div>
+              </Td>
             </tr>
           ) : null}
           {isError ? (

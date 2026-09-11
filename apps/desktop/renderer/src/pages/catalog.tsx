@@ -13,6 +13,7 @@ import { Modal, ModalContent } from '@/components/ui/modal';
 import { Label } from '@/components/ui/label';
 import { num } from '@/lib/utils';
 import { Pagination } from '@/components/ui/pagination';
+import { ProductsPageSkeleton, SearchResultsSkeleton } from '@/components/ui/skeleton';
 
 type Category = { id: string; name: string; active: boolean; _count?: { products: number } };
 type Product = {
@@ -50,7 +51,7 @@ export function ProductsPage() {
     minimumStock: 0,
   });
   const take = 12;
-  const { data } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ['products', q, page],
     queryFn: () =>
       api<{ items: Product[]; total: number }>(
@@ -58,6 +59,7 @@ export function ProductsPage() {
       ),
   });
   const { data: cats = [] } = useQuery({ queryKey: ['categories'], queryFn: () => api<Category[]>('/categories') });
+
   const mut = useMutation({
     mutationFn: () => {
       const payload = {
@@ -96,6 +98,10 @@ export function ProductsPage() {
     },
     onError: (e: Error) => toast.error(e.message),
   });
+
+  if (isLoading) {
+    return <ProductsPageSkeleton />;
+  }
 
   return (
     <div>

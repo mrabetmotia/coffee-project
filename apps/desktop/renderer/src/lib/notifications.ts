@@ -21,6 +21,7 @@ export interface AppNotification {
   actionLabel?: string;
   action?: () => void;
   progress?: number;
+  metadata?: Record<string, unknown>;
 }
 
 const STORAGE_KEY = 'cafestock-notifications';
@@ -54,6 +55,7 @@ function readPersisted(): AppNotification[] {
         persistent: Boolean(item.persistent),
         actionLabel: item.actionLabel ?? undefined,
         progress: typeof item.progress === 'number' ? item.progress : undefined,
+        metadata: item.metadata && typeof item.metadata === 'object' ? (item.metadata as Record<string, unknown>) : undefined,
       });
     }
 
@@ -66,7 +68,7 @@ function readPersisted(): AppNotification[] {
 function persist() {
   if (typeof window === 'undefined') return;
 
-  const metadata = notifications.map(({ id, type, title, message, createdAt, read, persistent, actionLabel, progress }) => ({
+  const metadata = notifications.map(({ id, type, title, message, createdAt, read, persistent, actionLabel, progress, metadata }) => ({
     id,
     type,
     title,
@@ -76,6 +78,7 @@ function persist() {
     persistent,
     actionLabel,
     progress,
+    metadata,
   }));
 
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(metadata));
@@ -92,6 +95,10 @@ function normalize(notification: AppNotification): AppNotification {
     read: Boolean(notification.read),
     persistent: Boolean(notification.persistent),
     progress: typeof notification.progress === 'number' ? notification.progress : undefined,
+    metadata:
+      notification.metadata && typeof notification.metadata === 'object'
+        ? (notification.metadata as Record<string, unknown>)
+        : undefined,
   };
 }
 
@@ -105,10 +112,15 @@ export function getUnreadNotificationCount(): number {
 
 export function addNotification(notification: AppNotification): AppNotification {
   const normalized = normalize(notification);
-  const existingIndex = notifications.findIndex((item) => item.id === normalized.id);
+  const existing = notifications.find((item) => item.id === normalized.id);
 
-  if (existingIndex >= 0) {
-    notifications = notifications.map((item) => (item.id === normalized.id ? { ...item, ...normalized } : item));
+  if (existing) {
+    const nextRead = existing.read || Boolean(normalized.read);
+    notifications = notifications.map((item) =>
+      item.id === normalized.id
+        ? { ...item, ...normalized, read: nextRead }
+        : item,
+    );
   } else {
     notifications = [normalized, ...notifications].slice(0, MAX_HISTORY);
   }
@@ -122,7 +134,13 @@ export function updateNotification(id: string, updates: Partial<AppNotification>
   const existing = notifications.find((notification) => notification.id === id);
   if (!existing) return null;
 
-  const next = normalize({ ...existing, ...updates, id, createdAt: existing.createdAt });
+  const next = normalize({
+    ...existing,
+    ...updates,
+    id,
+    createdAt: existing.createdAt,
+    read: updates.read === undefined ? existing.read : existing.read || Boolean(updates.read),
+  });
   notifications = notifications.map((notification) => (notification.id === id ? next : notification));
   persist();
   emit();

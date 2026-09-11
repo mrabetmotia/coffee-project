@@ -15,6 +15,7 @@ import { ReportsModule } from './reports/reports.module';
 import { SettingsModule } from './settings/settings.module';
 import { BackupModule } from './backup/backup.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { NotificationsModule } from './notifications/notifications.module';
 import { HealthController } from './health.controller';
 
 @Module({
@@ -35,6 +36,7 @@ import { HealthController } from './health.controller';
     SettingsModule,
     BackupModule,
     DashboardModule,
+    NotificationsModule,
   ],
   controllers: [HealthController],
 })

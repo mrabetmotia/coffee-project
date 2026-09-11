@@ -4,7 +4,7 @@ type Theme = 'light' | 'dark';
 const ThemeCtx = createContext<{ theme: Theme; toggle: () => void }>({ theme: 'light', toggle: () => undefined });
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<Theme>(() => (localStorage.getItem('cafestock-theme') as Theme) || 'light');
+  const [theme, setTheme] = useState<Theme>(() => (localStorage.getItem('cafestock-theme') as Theme) || 'dark');
   useEffect(() => {
     localStorage.setItem('cafestock-theme', theme);
     document.documentElement.classList.toggle('dark', theme === 'dark');

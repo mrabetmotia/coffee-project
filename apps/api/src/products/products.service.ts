@@ -48,6 +48,7 @@ export class ProductsService {
           reference: `INIT-${product.sku}`,
         });
       }
+      await this.stock.reconcileLowStockNotifications(tx, product.id);
       return tx.product.findUnique({ where: { id: product.id }, include: { category: true } });
     });
   }
@@ -61,7 +62,7 @@ export class ProductsService {
     if (dto.barcode !== undefined && dto.barcode !== existing.barcode) {
       await this.ensureUnique(undefined, dto.barcode ?? undefined, id);
     }
-    return this.prisma.product.update({
+    const updated = await this.prisma.product.update({
       where: { id },
       data: {
         name: dto.name,
@@ -77,6 +78,8 @@ export class ProductsService {
       },
       include: { category: true },
     });
+    await this.stock.reconcileLowStockNotifications(this.prisma, id);
+    return updated;
   }
 
   async findOne(id: string) {
