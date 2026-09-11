@@ -8,7 +8,8 @@
     "build": "electron-vite build",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint \"electron/**/*.ts\" \"renderer/src/**/*.{ts,tsx}\" --max-warnings=0",
-    "pack": "npm run build && electron-builder --win nsis"
+    "pack": "npm run build && electron-builder --win nsis",
+    "pack:release": "npm run build && electron-builder --win nsis --publish always"
   },
   "dependencies": {
     "@cafestock/shared": "1.0.0",

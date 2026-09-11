@@ -16,9 +16,3 @@ nsis:
   oneClick: false
   allowToChangeInstallationDirectory: true
   createDesktopShortcut: true
-
-publish:
-  provider: github
-  owner: mrabetmotia
-  repo: coffee-project
-  releaseType: release
