@@ -35,7 +35,65 @@ export function ProductDetailPage() {
     enabled: Boolean(id),
   });
 
-  if (isLoading) return <p className="text-sm text-muted-foreground">{t('Chargement du produit…')}</p>;
+  if (isLoading) {
+    return (
+      <div className="space-y-6" aria-live="polite">
+        <div className="flex items-center justify-between gap-3">
+          <div className="space-y-2">
+            <div className="h-7 w-44 animate-pulse rounded-md bg-muted" />
+            <div className="h-4 w-32 animate-pulse rounded-md bg-muted/80" />
+          </div>
+          <div className="h-8 w-24 animate-pulse rounded-md bg-muted" />
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <Card key={index}>
+              <CardContent className="flex items-center gap-3 pt-5">
+                <div className="h-10 w-10 animate-pulse rounded-xl bg-muted" />
+                <div className="space-y-2">
+                  <div className="h-3 w-16 animate-pulse rounded bg-muted" />
+                  <div className="h-5 w-20 animate-pulse rounded bg-muted/80" />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        <div className="grid gap-6 lg:grid-cols-[1.35fr_0.65fr]">
+          <Card>
+            <CardHeader>
+              <div className="h-4 w-28 animate-pulse rounded bg-muted" />
+            </CardHeader>
+            <div className="mx-5 mt-2 h-32 w-32 animate-pulse rounded-md bg-muted" />
+            <CardContent className="grid gap-5 sm:grid-cols-2">
+              {Array.from({ length: 6 }).map((_, index) => (
+                <div key={index} className="space-y-2">
+                  <div className="h-3 w-20 animate-pulse rounded bg-muted" />
+                  <div className="h-5 w-full animate-pulse rounded bg-muted/80" />
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <div className="h-4 w-20 animate-pulse rounded bg-muted" />
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {Array.from({ length: 3 }).map((_, index) => (
+                <div key={index} className="space-y-2">
+                  <div className="h-3 w-24 animate-pulse rounded bg-muted" />
+                  <div className="h-5 w-full animate-pulse rounded bg-muted/80" />
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
   if (isError || !data) return <p className="text-sm text-destructive">{t('Impossible de charger ce produit.')}</p>;
 
   const lowStock = num(data.currentStock) <= num(data.minimumStock);

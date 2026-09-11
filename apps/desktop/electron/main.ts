@@ -187,6 +187,14 @@ function setupAutoUpdater() {
 
   autoUpdater.autoDownload = false;
   autoUpdater.autoInstallOnAppQuit = false;
+  
+  autoUpdater.setFeedURL({
+    provider: 'github',
+    owner: 'mrabetmotia',
+    repo: 'coffee-project',
+    private: false,
+    releaseType: 'release',
+  });
 
   autoUpdater.on('checking-for-update', () => {
     console.log('[updater] Checking for updates...');
@@ -229,7 +237,12 @@ function setupAutoUpdater() {
   });
 
   setTimeout(() => {
-    void autoUpdater.checkForUpdates();
+    void autoUpdater.checkForUpdates().catch((error) => {
+      console.error('[updater] checkForUpdates startup failed:', error);
+      emitUpdaterEvent('update-error', {
+        message: error instanceof Error ? error.message : 'Unknown updater error',
+      });
+    });
   }, 1500);
 }
 

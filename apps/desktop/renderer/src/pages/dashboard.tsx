@@ -64,18 +64,138 @@ export function DashboardPage() {
           </Select>
         }
       />
-      {isLoading ? <p className="text-sm text-muted-foreground">Chargement…</p> : null}
-      <div key={period} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6">
-        {kpis.map((k) => (
-          <Card key={k.label} className="overflow-hidden">
-            <CardHeader className="pb-2">
-              <div className={cn('flex h-9 w-9 items-center justify-center rounded-xl', k.tone)}><k.icon className="h-4 w-4" /></div>
-              <CardTitle className="text-right text-xs font-medium text-muted-foreground">{k.label}</CardTitle>
-            </CardHeader>
-            <CardContent className="pt-1 text-xl font-semibold tracking-tight">{k.value}</CardContent>
-          </Card>
-        ))}
-      </div>
+      {isLoading ? (
+        <div className="space-y-6">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6">
+            {Array.from({ length: 6 }).map((_, index) => (
+              <Card key={index} className="overflow-hidden">
+                <CardHeader className="pb-2">
+                  <div className="h-9 w-9 animate-pulse rounded-xl bg-muted" />
+                  <div className="mt-2 h-3 w-20 animate-pulse rounded bg-muted" />
+                </CardHeader>
+                <CardContent className="pt-1">
+                  <div className="h-6 w-24 animate-pulse rounded bg-muted/80" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          <div className="grid gap-4 xl:grid-cols-3">
+            <Card className="xl:col-span-2">
+              <CardHeader>
+                <div className="h-4 w-28 animate-pulse rounded bg-muted" />
+              </CardHeader>
+              <CardContent className="h-72">
+                <div className="h-full w-full animate-pulse rounded-xl bg-muted/70" />
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <div className="h-4 w-28 animate-pulse rounded bg-muted" />
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {Array.from({ length: 4 }).map((_, index) => (
+                  <div key={index} className="h-10 animate-pulse rounded-md bg-muted/75" />
+                ))}
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <Card key={index}>
+                <CardHeader>
+                  <div className="h-4 w-24 animate-pulse rounded bg-muted" />
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {Array.from({ length: 4 }).map((__, rowIndex) => (
+                    <div key={rowIndex} className="h-8 animate-pulse rounded-md bg-muted/75" />
+                  ))}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <>
+          <div key={period} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6">
+            {kpis.map((k) => (
+              <Card key={k.label} className="overflow-hidden">
+                <CardHeader className="pb-2">
+                  <div className={cn('flex h-9 w-9 items-center justify-center rounded-xl', k.tone)}><k.icon className="h-4 w-4" /></div>
+                  <CardTitle className="text-right text-xs font-medium text-muted-foreground">{k.label}</CardTitle>
+                </CardHeader>
+                <CardContent className="pt-1 text-xl font-semibold tracking-tight">{k.value}</CardContent>
+              </Card>
+            ))}
+          </div>
+
+          <div className="mt-6 grid gap-4 xl:grid-cols-3">
+            <Card className="xl:col-span-2">
+              <CardHeader>
+                <div><p className="eyebrow mb-1">Performance</p><CardTitle>Ventes et profit</CardTitle></div>
+              </CardHeader>
+              <CardContent className="h-72">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={data?.chart ?? []}>
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                    <XAxis dataKey="date" fontSize={12} />
+                    <YAxis fontSize={12} />
+                    <Tooltip />
+                    <Area type="monotone" dataKey="sales" name="CA" stroke="#1e3a5f" fill="#1e3a5f22" />
+                    <Area type="monotone" dataKey="profit" name="Profit" stroke="#3b82f6" fill="#3b82f622" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <div><p className="eyebrow mb-1">Top produits</p><CardTitle>Meilleures ventes</CardTitle></div>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {(data?.bestSellers ?? []).length === 0 ? (
+                  <p className="text-sm text-muted-foreground">Aucune vente sur la période.</p>
+                ) : (
+                  data?.bestSellers.map((p) => (
+                    <div key={p.name} className="flex items-center justify-between gap-4 border-b border-border/60 py-2.5 text-sm last:border-0">
+                      <span className="truncate font-medium">{p.name}</span>
+                      <span className="shrink-0 rounded-md bg-muted px-2 py-1 text-xs font-semibold text-muted-foreground">{formatQty(p.qty)}</span>
+                    </div>
+                  ))
+                )}
+              </CardContent>
+            </Card>
+          </div>
+          <div className="mt-6 grid gap-4 lg:grid-cols-2 xl:grid-cols-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Stock faible</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {(data?.lowStock ?? []).length === 0 ? (
+                  <p className="text-sm text-muted-foreground">Aucun produit sous seuil.</p>
+                ) : (
+                  data?.lowStock.map((p) => (
+                    <div key={p.id} className="flex items-center justify-between gap-3 border-b border-border/60 py-2.5 text-sm last:border-0">
+                      <span className="truncate font-medium">{p.name}</span>
+                      <Badge variant="warning">
+                        {formatQty(num(p.currentStock))} / {formatQty(num(p.minimumStock))}
+                      </Badge>
+                    </div>
+                  ))
+                )}
+                <Link to="/stock/faible" className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline">
+                  Voir tout
+                  <ArrowUpRight className="h-3 w-3" />
+                </Link>
+              </CardContent>
+            </Card>
+            <ListCard title="Ventes récentes" rows={data?.recentSales ?? []} get={(s) => s.invoiceNumber} extra={(s) => formatMoney(num(s.total))} to={(s) => `/ventes/${s.id}`} />
+            <ListCard title="Entrées récentes" rows={data?.recentEntries ?? []} get={(s) => s.number} extra={(s) => formatMoney(num(s.totalCost))} />
+            <ListCard title="Paiements récents" rows={data?.recentPayments ?? []} get={(s) => s.sale.invoiceNumber} extra={(s) => formatMoney(num(s.amount))} />
+          </div>
+        </>
+      )}
       <div className="mt-6 grid gap-4 xl:grid-cols-3">
         <Card className="xl:col-span-2">
           <CardHeader>

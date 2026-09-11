@@ -103,7 +103,37 @@ export function ClientDetailPage() {
         sales: { id: string; invoiceNumber: string; total: string; remainingAmount: string; createdAt: string }[];
       }>(`/clients/${id}`),
   });
-  if (!data) return <p>Chargement…</p>;
+  if (!data) {
+    return (
+      <div className="space-y-4" aria-live="polite">
+        <div className="flex items-center justify-between">
+          <div className="space-y-2">
+            <div className="h-7 w-44 animate-pulse rounded-md bg-muted" />
+            <div className="h-4 w-32 animate-pulse rounded-md bg-muted/80" />
+          </div>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <div key={index} className="rounded-xl border bg-card p-4">
+              <div className="h-3 w-16 animate-pulse rounded bg-muted" />
+              <div className="mt-3 h-6 w-20 animate-pulse rounded bg-muted/80" />
+            </div>
+          ))}
+        </div>
+
+        <div className="rounded-xl border bg-card p-3">
+          <div className="mb-4 h-8 w-28 animate-pulse rounded bg-muted" />
+          <div className="space-y-3">
+            {Array.from({ length: 5 }).map((_, index) => (
+              <div key={index} className="h-12 animate-pulse rounded-md bg-muted/70" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div>
       <PageHeader title={data.name} subtitle={data.phone ?? ''} />
