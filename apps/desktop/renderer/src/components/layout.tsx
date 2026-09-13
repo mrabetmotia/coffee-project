@@ -143,7 +143,7 @@ export function AppLayout() {
             >
               <ArrowLeft className="h-4 w-4" />
             </button>
-            <div><p className="text-sm font-semibold">{t(currentLabel)}</p><p className="hidden text-xs text-muted-foreground sm:block">{t('Gestion commerciale')} <span className="mx-1">·</span> {t('hors ligne')}</p></div>
+            <div><p className="text-sm font-semibold">{t(currentLabel)}</p><p className="hidden text-xs text-muted-foreground sm:block">{t('Gestion commerciale')}</p></div>
           </div>
           <div className="flex items-center gap-2">
             <select aria-label="Language" value={language} onChange={(event) => setLanguage(event.target.value as 'fr' | 'en' | 'ar' | 'de' | 'it' | 'tr')} className="h-9 w-[58px] rounded-lg border border-input bg-card px-2 text-xs font-semibold">
