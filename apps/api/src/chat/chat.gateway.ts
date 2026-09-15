@@ -32,6 +32,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.userSockets.set(user.id, sockets);
       console.info('[chat] connected', { socketId: socket.id, userId: user.id, role: user.role });
       socket.emit('chat:connection', { status: 'connected' });
+      this.emitUnread(socket.data.user);
     } catch (error) {
       console.error('[chat] connect_error', error);
       socket.emit('chat:connection', { status: 'unauthorized', reason: error instanceof Error ? error.message : 'unknown' });
@@ -96,6 +97,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.server.to(conversationRoom(result.message.conversationId)).emit('chat:message:new', event);
       this.server.to(conversationRoom(result.message.conversationId)).emit('chat:conversation:updated', { conversationId: result.message.conversationId, lastMessage: event });
       this.emitUnread(socket.data.user);
+      if (result.recipientId && result.recipientId !== socket.data.user.id) void this.emitUnreadForUserId(result.recipientId);
       console.info('[chat] emitting message', { conversationId: result.message.conversationId, messageId: result.message.id });
       return { success: true, message: event };
     } catch (error) {
@@ -138,6 +140,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         if (socket.data.user?.id === user.id) socket.emit('chat:unread-count', payload);
       });
     });
+  }
+
+  private async emitUnreadForUserId(userId: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId }, select: { id: true, role: true, name: true } });
+    if (user) this.emitUnread(user);
   }
 
   private async notifyRecipientIfAway(recipientId: string | null, sender: ChatUser, conversationId: string) {

@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   LayoutDashboard,
   ShoppingCart,
@@ -29,7 +29,8 @@ import {
   MessageSquareText,
 } from 'lucide-react';
 import { useTheme } from '@/lib/theme';
-import { getCurrentUser, setCurrentUser, setToken } from '@/lib/api';
+import { api, getCurrentUser, setCurrentUser, setToken } from '@/lib/api';
+import { getChatSocket, refreshChatSocketAuth } from '@/lib/chat';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/lib/i18n';
 import { NotificationCenter } from '@/components/notification-center';
@@ -88,6 +89,7 @@ export function AppLayout({ role = 'ADMIN' }: { role?: 'ADMIN' | 'CLIENT' }) {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [desktopOpen, setDesktopOpen] = useState(true);
+  const [unreadMessages, setUnreadMessages] = useState(0);
   const nav = role === 'CLIENT' ? clientNav : adminNav;
   const currentLabel = nav
     .flatMap((item) => ('children' in item ? item.children : [item]))
@@ -101,6 +103,32 @@ export function AppLayout({ role = 'ADMIN' }: { role?: 'ADMIN' | 'CLIENT' }) {
     setMobileOpen(true);
     setDesktopOpen(true);
   };
+
+  useEffect(() => {
+    let active = true;
+    const socket = getChatSocket();
+    const onUnreadCount = (payload: { count?: number }) => {
+      if (active) setUnreadMessages(Math.max(0, payload.count ?? 0));
+    };
+    const onChatConnection = (payload: { status: 'connected' | 'unauthorized' }) => {
+      (socket as typeof socket & { cafestockAuthenticated?: boolean }).cafestockAuthenticated = payload.status === 'connected';
+    };
+    const onDisconnect = () => {
+      (socket as typeof socket & { cafestockAuthenticated?: boolean }).cafestockAuthenticated = false;
+    };
+
+    refreshChatSocketAuth();
+    void api<{ count: number }>('/chat/unread-count').then((payload) => {
+      if (active) setUnreadMessages(Math.max(0, payload.count));
+    }).catch(() => undefined);
+    socket.on('chat:unread-count', onUnreadCount).on('chat:connection', onChatConnection).on('disconnect', onDisconnect);
+    if (!socket.connected) socket.connect();
+
+    return () => {
+      active = false;
+      socket.off('chat:unread-count', onUnreadCount).off('chat:connection', onChatConnection).off('disconnect', onDisconnect);
+    };
+  }, []);
 
   function logout() {
     setToken(null);
@@ -138,7 +166,7 @@ export function AppLayout({ role = 'ADMIN' }: { role?: 'ADMIN' | 'CLIENT' }) {
                 ))}
               </div>
             ) : (
-              <Item key={item.to} to={item.to} label={t(item.label)} icon={item.icon} onClick={closeMobile} />
+              <Item key={item.to} to={item.to} label={t(item.label)} icon={item.icon} onClick={closeMobile} badge={item.to.includes('/chat') && unreadMessages > 0 ? unreadMessages : undefined} />
             ),
           )}
         </nav>
@@ -194,12 +222,14 @@ function Item({
   icon: Icon,
   onClick,
   end,
+  badge,
 }: {
   to: string;
   label: string;
   icon: typeof LayoutDashboard;
   onClick: () => void;
   end?: boolean;
+  badge?: number;
 }) {
   return (
     <NavLink
@@ -214,7 +244,8 @@ function Item({
       onClick={onClick}
     >
       <Icon className="h-4 w-4" />
-      {label}
+      <span className="min-w-0 flex-1 truncate">{label}</span>
+      {badge ? <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground">{badge > 9 ? '9+' : badge}</span> : null}
     </NavLink>
   );
 }
