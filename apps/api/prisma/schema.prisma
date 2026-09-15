@@ -12,6 +12,17 @@ datasource db {
 
 enum UserRole {
   ADMIN
+  CLIENT
+}
+
+enum OrderStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  PREPARING
+  READY
+  COMPLETED
+  CANCELLED
 }
 
 enum PaymentMethod {
@@ -52,10 +63,15 @@ model User {
   id           String         @id @default(cuid())
   username     String         @unique
   passwordHash String
+  name         String?
+  email        String?        @unique
   role         UserRole       @default(ADMIN)
+  isActive     Boolean        @default(true)
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
   notifications Notification[]
+  client       Client?
+  orders       CustomerOrder[]
 }
 
 model Notification {
@@ -104,6 +120,7 @@ model Product {
   updatedAt     DateTime @updatedAt
 
   saleItems        SaleItem[]
+  orderItems       CustomerOrderItem[]
   stockMovements   StockMovement[]
   stockEntryItems  StockEntryItem[]
   inventoryLines   InventorySessionItem[]
@@ -115,14 +132,19 @@ model Product {
 }
 
 model Client {
-  id        String   @id @default(cuid())
+  id        String          @id @default(cuid())
+  userId    String?         @unique
+  user      User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
   name      String
+  email     String?         @unique
   phone     String?
   address   String?
   notes     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  isActive  Boolean         @default(true)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
   sales     Sale[]
+  orders    CustomerOrder[]
 
   @@index([name])
   @@index([phone])
@@ -219,6 +241,41 @@ model SaleReturnItem {
   unitCost     Decimal
   lineTotal    Decimal
   lineProfit   Decimal
+}
+
+model CustomerOrder {
+  id              String             @id @default(cuid())
+  clientId        String
+  client          Client             @relation(fields: [clientId], references: [id])
+  userId          String
+  user            User               @relation(fields: [userId], references: [id])
+  status          OrderStatus        @default(PENDING)
+  totalAmount     Decimal
+  note            String?
+  rejectionReason String?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  items           CustomerOrderItem[]
+
+  @@index([clientId])
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model CustomerOrderItem {
+  id          String        @id @default(cuid())
+  orderId     String
+  order       CustomerOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId   String
+  product     Product       @relation(fields: [productId], references: [id])
+  quantity    Decimal
+  unitPrice   Decimal
+  totalPrice  Decimal
+  createdAt   DateTime      @default(now())
+
+  @@index([orderId])
+  @@index([productId])
 }
 
 model StockMovement {

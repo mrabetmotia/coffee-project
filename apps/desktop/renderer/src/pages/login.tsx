@@ -1,6 +1,6 @@
 import { FormEvent, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { api, setToken } from '@/lib/api';
+import { api, setCurrentUser, setToken } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -19,12 +19,13 @@ export function LoginPage() {
     setLoading(true);
     setError('');
     try {
-      const res = await api<{ accessToken: string }>('/auth/login', {
+      const res = await api<{ accessToken: string; user?: { id?: string; username?: string; role?: string; name?: string } }>('/auth/login', {
         method: 'POST',
         body: JSON.stringify({ username, password }),
       });
       setToken(res.accessToken);
-      navigate('/');
+      setCurrentUser(res.user ?? null);
+      navigate(res.user?.role === 'CLIENT' ? '/client' : '/');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Connexion impossible');
     } finally {

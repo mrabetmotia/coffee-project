@@ -11,6 +11,11 @@ export class NotificationsController {
     return this.notifications.list(req.user.id);
   }
 
+  @Get('unread-count')
+  unreadCount(@Req() req: { user: { id: string } }) {
+    return this.notifications.unreadCount(req.user.id);
+  }
+
   @Post()
   create(
     @Req() req: { user: { id: string } },

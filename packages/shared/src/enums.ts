@@ -1,5 +1,6 @@
 export const UserRole = {
   ADMIN: 'ADMIN',
+  CLIENT: 'CLIENT',
 } as const;
 export type UserRole = (typeof UserRole)[keyof typeof UserRole];
 
@@ -41,6 +42,17 @@ export const SaleStatus = {
   RETURNED: 'RETURNED',
 } as const;
 export type SaleStatus = (typeof SaleStatus)[keyof typeof SaleStatus];
+
+export const OrderStatus = {
+  PENDING: 'PENDING',
+  ACCEPTED: 'ACCEPTED',
+  REJECTED: 'REJECTED',
+  PREPARING: 'PREPARING',
+  READY: 'READY',
+  COMPLETED: 'COMPLETED',
+  CANCELLED: 'CANCELLED',
+} as const;
+export type OrderStatus = (typeof OrderStatus)[keyof typeof OrderStatus];
 
 export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
   CASH: 'Espèces',

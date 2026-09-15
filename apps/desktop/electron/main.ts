@@ -265,11 +265,11 @@ function createSplashWindow() {
   if (splashWindow) return;
 
   splashWindow = new BrowserWindow({
-    width: 430,
+    width: 530,
     height: 460,
-    minWidth: 430,
+    minWidth: 530,
     minHeight: 460,
-    maxWidth: 430,
+    maxWidth: 530,
     maxHeight: 460,
     frame: false,
     resizable: false,

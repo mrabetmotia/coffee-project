@@ -20,17 +20,20 @@ import {
   Sun,
   LogOut,
   Menu,
-  X,
   Store,
   ArrowLeft,
+  List,
+  UserRound,
+  ClipboardList,
+  Bell,
 } from 'lucide-react';
 import { useTheme } from '@/lib/theme';
-import { setToken } from '@/lib/api';
+import { getCurrentUser, setCurrentUser, setToken } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/lib/i18n';
 import { NotificationCenter } from '@/components/notification-center';
 
-const nav = [
+const adminNav = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard },
   {
     label: 'Ventes',
@@ -57,20 +60,32 @@ const nav = [
       { to: '/entrees', label: 'Historique', icon: History },
     ],
   },
-  { to: '/clients', label: 'Clients', icon: Users },
+  { to: '/admin/clients', label: 'Clients', icon: Users },
+  { to: '/admin/orders', label: 'Commandes clients', icon: ClipboardList },
+  { to: '/admin/notifications', label: 'Notifications', icon: Bell },
   { to: '/caisse', label: 'Caisse', icon: Wallet },
   { to: '/rapports', label: 'Rapports', icon: BarChart3 },
   { to: '/factures', label: 'Factures', icon: FileText },
   { to: '/parametres', label: 'Paramètres', icon: Settings },
 ];
 
-export function AppLayout() {
+const clientNav = [
+  { to: '/client', label: 'Accueil', icon: LayoutDashboard },
+  { to: '/client/products', label: 'Produits', icon: Package },
+  { to: '/client/cart', label: 'Panier', icon: ShoppingCart },
+  { to: '/client/orders', label: 'Mes commandes', icon: List },
+  { to: '/client/notifications', label: 'Notifications', icon: Bell },
+  { to: '/client/profile', label: 'Profil', icon: UserRound },
+];
+
+export function AppLayout({ role = 'ADMIN' }: { role?: 'ADMIN' | 'CLIENT' }) {
   const { theme, toggle } = useTheme();
   const { language, setLanguage, t, languageNames } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [desktopOpen, setDesktopOpen] = useState(true);
+  const nav = role === 'CLIENT' ? clientNav : adminNav;
   const currentLabel = nav
     .flatMap((item) => ('children' in item ? item.children : [item]))
     .find((item) => item?.to === location.pathname)?.label ?? 'Espace de travail';
@@ -86,6 +101,7 @@ export function AppLayout() {
 
   function logout() {
     setToken(null);
+    setCurrentUser(null);
     navigate('/login');
   }
 
@@ -125,8 +141,8 @@ export function AppLayout() {
         </nav>
         <div className="border-t border-white/10 px-4 py-4">
           <div className="flex items-center gap-3 rounded-xl bg-white/5 px-3 py-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20 text-xs font-semibold text-primary">AD</div>
-            <div className="min-w-0 flex-1"><p className="truncate text-sm font-medium">Administrateur</p><p className="truncate text-[11px] text-sidebar-muted">Compte local</p></div>
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20 text-xs font-semibold text-primary">{(getCurrentUser()?.name ?? (role === 'CLIENT' ? 'CL' : 'AD')).slice(0, 2).toUpperCase()}</div>
+            <div className="min-w-0 flex-1"><p className="truncate text-sm font-medium">{role === 'CLIENT' ? (getCurrentUser()?.name ?? 'Client') : 'Administrateur'}</p><p className="truncate text-[11px] text-sidebar-muted">{role === 'CLIENT' ? 'Compte client' : 'Compte local'}</p></div>
             <button onClick={logout} className="rounded-lg p-2 text-sidebar-muted transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground" aria-label={t('Se déconnecter')}><LogOut className="h-4 w-4" /></button>
           </div>
         </div>

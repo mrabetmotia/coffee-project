@@ -34,8 +34,12 @@ export class AuthService implements OnModuleInit {
   }
 
   async login(dto: LoginDto) {
-    const user = await this.prisma.user.findUnique({ where: { username: dto.username } });
+    const identifier = dto.username.trim();
+    const user = await this.prisma.user.findFirst({
+      where: { OR: [{ username: identifier }, { email: identifier }] },
+    });
     if (!user) throw new UnauthorizedException('Identifiants incorrects.');
+    if (!user.isActive) throw new UnauthorizedException('Compte inactif.');
     const ok = await bcrypt.compare(dto.password, user.passwordHash);
     if (!ok) throw new UnauthorizedException('Identifiants incorrects.');
     const accessToken = await this.jwt.signAsync({
@@ -43,7 +47,17 @@ export class AuthService implements OnModuleInit {
       username: user.username,
       role: user.role,
     });
-    return { accessToken, user: { id: user.id, username: user.username, role: user.role } };
+    return {
+      accessToken,
+      user: {
+        id: user.id,
+        username: user.username,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        isActive: user.isActive,
+      },
+    };
   }
 
   async changePassword(userId: string, currentPassword: string, newPassword: string) {

@@ -165,6 +165,53 @@ describe('Critical business logic', () => {
     const adj = await prisma.stockMovement.findFirst({ where: { type: 'ADJUSTMENT', productId }, orderBy: { createdAt: 'desc' } });
     expect(adj).toBeTruthy();
   });
+
+  it('supports a client account and a pending customer order', async () => {
+    const admin = await prisma.user.findUnique({ where: { username: 'admin' } });
+    expect(admin).toBeTruthy();
+
+    const user = await prisma.user.create({
+      data: {
+        username: 'client-demo',
+        passwordHash: 'hash',
+        name: 'Client Demo',
+        email: 'client-demo@example.com',
+        role: 'CLIENT',
+        isActive: true,
+      },
+    });
+
+    const client = await prisma.client.create({
+      data: {
+        name: 'Client Demo',
+        email: 'client-demo@example.com',
+        phone: '12345678',
+        userId: user.id,
+      },
+    });
+
+    const order = await prisma.customerOrder.create({
+      data: {
+        clientId: client.id,
+        userId: user.id,
+        status: 'PENDING',
+        totalAmount: 1.2,
+        note: 'Coffee refill',
+        items: {
+          create: [{
+            productId,
+            quantity: 2,
+            unitPrice: 0.6,
+            totalPrice: 1.2,
+          }],
+        },
+      },
+      include: { items: true },
+    });
+
+    expect(order.status).toBe('PENDING');
+    expect(order.items[0].quantity.toNumber()).toBe(2);
+  });
 });
 
 function round3(n: number) {

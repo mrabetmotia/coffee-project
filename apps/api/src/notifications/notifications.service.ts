@@ -15,6 +15,10 @@ export class NotificationsService {
     });
   }
 
+  async unreadCount(userId: string) {
+    return { count: await this.prisma.notification.count({ where: { userId, readAt: null } }) };
+  }
+
   async createForUser(userId: string, dto: CreateNotificationDto) {
     return this.prisma.notification.create({
       data: {
@@ -28,6 +32,12 @@ export class NotificationsService {
         persistent: dto.persistent ?? false,
       },
     });
+  }
+
+  async createForAdmins(dto: CreateNotificationDto) {
+    const admins = await this.prisma.user.findMany({ where: { role: 'ADMIN', isActive: true } });
+    if (!admins.length) return [];
+    return Promise.all(admins.map((user) => this.createForUser(user.id, dto)));
   }
 
   async markRead(userId: string, notificationId: string) {

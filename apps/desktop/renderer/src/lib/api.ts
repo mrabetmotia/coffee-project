@@ -1,4 +1,5 @@
 const TOKEN_KEY = 'cafestock-token';
+const USER_KEY = 'cafestock-user';
 
 let apiBase = import.meta.env.VITE_API_URL ?? 'http://127.0.0.1:47821/api';
 
@@ -13,6 +14,33 @@ export function getToken() {
 export function setToken(token: string | null) {
   if (token) localStorage.setItem(TOKEN_KEY, token);
   else localStorage.removeItem(TOKEN_KEY);
+}
+
+export function getCurrentUser(): { id?: string; username?: string; role?: string; name?: string } | null {
+  try {
+    const raw = localStorage.getItem(USER_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+export function setCurrentUser(user: { id?: string; username?: string; role?: string; name?: string } | null) {
+  if (user) localStorage.setItem(USER_KEY, JSON.stringify(user));
+  else localStorage.removeItem(USER_KEY);
+}
+
+export function getCurrentRole(): string | null {
+  const user = getCurrentUser();
+  if (user?.role) return user.role;
+  const token = getToken();
+  if (!token) return null;
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1] ?? ''));
+    return payload?.role ?? null;
+  } catch {
+    return null;
+  }
 }
 
 export class ApiError extends Error {
