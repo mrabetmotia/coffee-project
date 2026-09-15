@@ -7,6 +7,10 @@ export function setApiBase(url: string) {
   apiBase = url;
 }
 
+export function getApiBase() {
+  return apiBase;
+}
+
 export function getToken() {
   return localStorage.getItem(TOKEN_KEY);
 }

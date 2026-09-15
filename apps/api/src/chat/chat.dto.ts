@@ -1,0 +1,18 @@
+import { IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+
+export class SendChatMessageDto {
+  @IsString()
+  @MinLength(1)
+  @MaxLength(4000)
+  content!: string;
+}
+
+export class ChatMessagesQueryDto {
+  @IsOptional()
+  @IsString()
+  cursor?: string;
+
+  @IsOptional()
+  @IsString()
+  limit?: string;
+}

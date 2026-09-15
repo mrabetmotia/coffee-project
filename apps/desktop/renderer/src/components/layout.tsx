@@ -26,6 +26,7 @@ import {
   UserRound,
   ClipboardList,
   Bell,
+  MessageSquareText,
 } from 'lucide-react';
 import { useTheme } from '@/lib/theme';
 import { getCurrentUser, setCurrentUser, setToken } from '@/lib/api';
@@ -62,6 +63,7 @@ const adminNav = [
   },
   { to: '/admin/clients', label: 'Clients', icon: Users },
   { to: '/admin/orders', label: 'Commandes clients', icon: ClipboardList },
+  { to: '/admin/chat', label: 'Messages', icon: MessageSquareText },
   { to: '/admin/notifications', label: 'Notifications', icon: Bell },
   { to: '/caisse', label: 'Caisse', icon: Wallet },
   { to: '/rapports', label: 'Rapports', icon: BarChart3 },
@@ -74,6 +76,7 @@ const clientNav = [
   { to: '/client/products', label: 'Produits', icon: Package },
   { to: '/client/cart', label: 'Panier', icon: ShoppingCart },
   { to: '/client/orders', label: 'Mes commandes', icon: List },
+  { to: '/client/chat', label: 'Messages', icon: MessageSquareText },
   { to: '/client/notifications', label: 'Notifications', icon: Bell },
   { to: '/client/profile', label: 'Profil', icon: UserRound },
 ];

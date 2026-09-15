@@ -72,6 +72,7 @@ model User {
   notifications Notification[]
   client       Client?
   orders       CustomerOrder[]
+  sentChatMessages ChatMessage[] @relation("ChatMessageSender")
 }
 
 model Notification {
@@ -145,6 +146,7 @@ model Client {
   updatedAt DateTime        @updatedAt
   sales     Sale[]
   orders    CustomerOrder[]
+  conversation Conversation?
 
   @@index([name])
   @@index([phone])
@@ -276,6 +278,35 @@ model CustomerOrderItem {
 
   @@index([orderId])
   @@index([productId])
+}
+
+model Conversation {
+  id             String       @id @default(cuid())
+  clientId       String       @unique
+  client         Client       @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  status         String       @default("OPEN")
+  lastMessageAt  DateTime?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  messages       ChatMessage[]
+
+  @@index([lastMessageAt])
+  @@index([status])
+}
+
+model ChatMessage {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId       String
+  sender         User         @relation("ChatMessageSender", fields: [senderId], references: [id], onDelete: Restrict)
+  content        String
+  messageType    String       @default("TEXT")
+  createdAt      DateTime     @default(now())
+  readAt         DateTime?
+
+  @@index([conversationId, createdAt])
+  @@index([senderId, readAt])
 }
 
 model StockMovement {

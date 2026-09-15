@@ -16,6 +16,7 @@ import { ClientDashboardPage, ClientProductsPage, ClientProductDetailPage, Clien
 import { ReportsPage } from '@/pages/reports';
 import { SettingsPage } from '@/pages/settings';
 import { NotificationsPage } from '@/pages/notifications';
+import { AdminChatPage, ClientChatPage } from '@/pages/chat';
 import { getCurrentRole } from '@/lib/api';
 
 export function App() {
@@ -47,6 +48,8 @@ export function App() {
               <Route path="/admin/clients/:id" element={<ClientDetailPage />} />
               <Route path="/admin/orders" element={<AdminOrdersPage />} />
               <Route path="/admin/orders/:id" element={<AdminOrderDetailPage />} />
+              <Route path="/admin/chat" element={<AdminChatPage />} />
+              <Route path="/admin/chat/:conversationId" element={<AdminChatPage />} />
               <Route path="/admin/notifications" element={<NotificationsPage />} />
               <Route path="/caisse" element={<CashPage />} />
               <Route path="/rapports" element={<ReportsPage />} />
@@ -65,6 +68,7 @@ export function App() {
               <Route path="/client/orders" element={<ClientOrdersPage />} />
               <Route path="/client/orders/:id" element={<ClientOrderDetailPage />} />
               <Route path="/client/profile" element={<ClientProfilePage />} />
+              <Route path="/client/chat" element={<ClientChatPage />} />
               <Route path="/client/notifications" element={<NotificationsPage />} />
             </Route>
           </Route>
