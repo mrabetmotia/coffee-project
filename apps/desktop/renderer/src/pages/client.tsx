@@ -1,9 +1,9 @@
-import { FormEvent, useMemo, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { ArrowRight, CheckCircle2, ChevronDown, ChevronUp, CircleAlert, Minus, Package, Plus, Search, ShoppingBag, Trash2, UserRound } from 'lucide-react';
-import { api, getCurrentUser } from '@/lib/api';
+import { api, getCurrentUser, setCurrentUser, useCurrentUser } from '@/lib/api';
 import { PageHeader, formatMoney } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,6 +13,7 @@ import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { useBackendNotifications } from '@/components/notification-center';
 import { useCart } from '@/lib/cart';
+import { Skeleton } from '@/components/ui/skeleton';
 import { OrderDetailSkeleton, TableSkeleton } from '@/components/ui/skeleton';
 
 type Product = { id: string; name: string; sku: string; image: string | null; salePrice: string; currentStock: string; active: boolean; category: { name: string } };
@@ -93,8 +94,33 @@ export function ClientOrderDetailPage() {
 }
 
 export function ClientProfilePage() {
-  const user = getCurrentUser();
-  return <div className="space-y-6"><PageHeader title="Mon profil" subtitle="Les informations de votre compte CaféStock." /><section className="max-w-2xl rounded-2xl border bg-card p-6 shadow-sm"><div className="flex items-center gap-4 border-b pb-5"><div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary"><UserRound className="h-6 w-6" /></div><div><h2 className="font-semibold">{user?.name ?? 'Client'}</h2><p className="text-sm text-muted-foreground">Compte client</p></div></div><div className="grid gap-5 pt-5 sm:grid-cols-2"><div><p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Email</p><p className="mt-1 font-medium">{user?.username ?? '—'}</p></div><div><p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Accès</p><p className="mt-1 font-medium">Portail client</p></div></div></section></div>;
+  const user = useCurrentUser();
+  const [profile, setProfile] = useState({ name: '', email: '', phone: '', address: '' });
+  const [password, setPassword] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
+  const [loading, setLoading] = useState(true); const [savingProfile, setSavingProfile] = useState(false); const [savingPassword, setSavingPassword] = useState(false); const [error, setError] = useState('');
+
+  useEffect(() => {
+    let active = true;
+    void api<{ id: string; username: string; name: string | null; email: string | null; role: string; isActive: boolean; client: { id: string; name: string; email: string | null; phone: string | null; address: string | null } | null }>('/auth/me').then((data) => {
+      if (!active) return;
+      setProfile({ name: data.client?.name ?? data.name ?? '', email: data.client?.email ?? data.email ?? '', phone: data.client?.phone ?? '', address: data.client?.address ?? '' });
+      setCurrentUser(data);
+    }).catch((err: Error) => { if (active) setError(err.message); }).finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, []);
+
+  async function saveProfile(event: FormEvent) {
+    event.preventDefault(); setSavingProfile(true); setError('');
+    try { const data = await api<NonNullable<typeof user>>('/auth/me', { method: 'PATCH', body: JSON.stringify(profile) }); setCurrentUser(data); setProfile({ name: data.client?.name ?? data.name ?? '', email: data.client?.email ?? data.email ?? '', phone: data.client?.phone ?? '', address: data.client?.address ?? '' }); toast.success('Profil mis à jour'); } catch (err) { setError(err instanceof Error ? err.message : 'Impossible de mettre à jour le profil'); } finally { setSavingProfile(false); }
+  }
+
+  async function savePassword(event: FormEvent) {
+    event.preventDefault(); setSavingPassword(true); setError('');
+    if (password.newPassword !== password.confirmPassword) { setError('Les mots de passe ne correspondent pas.'); setSavingPassword(false); return; }
+    try { await api('/auth/password', { method: 'PATCH', body: JSON.stringify({ currentPassword: password.currentPassword, newPassword: password.newPassword }) }); setPassword({ currentPassword: '', newPassword: '', confirmPassword: '' }); toast.success('Mot de passe modifié'); } catch (err) { setError(err instanceof Error ? err.message : 'Impossible de modifier le mot de passe'); } finally { setSavingPassword(false); }
+  }
+
+  return <div className="space-y-6"><PageHeader title="Mon profil" subtitle="Gérez les informations de votre compte CaféStock." />{error ? <p className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">{error}</p> : null}<div className="grid gap-6 lg:grid-cols-[1fr_380px]"><form onSubmit={saveProfile} className="rounded-2xl border bg-card p-6 shadow-sm"><div className="mb-6 flex items-center gap-4 border-b pb-5"><div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary"><UserRound className="h-6 w-6" /></div><div><h2 className="font-semibold">Informations du compte</h2><p className="text-sm text-muted-foreground">{user?.username ?? 'Compte client'}</p></div></div>{loading ? <Skeleton className="h-40 w-full" /> : <div className="space-y-4"><div><Label>Nom</Label><Input className="mt-1" value={profile.name} onChange={(event) => setProfile({ ...profile, name: event.target.value })} required /></div><div><Label>Email</Label><Input className="mt-1" type="email" value={profile.email} onChange={(event) => setProfile({ ...profile, email: event.target.value })} /></div><div><Label>Téléphone</Label><Input className="mt-1" value={profile.phone} onChange={(event) => setProfile({ ...profile, phone: event.target.value })} /></div><div><Label>Adresse</Label><Input className="mt-1" value={profile.address} onChange={(event) => setProfile({ ...profile, address: event.target.value })} /></div><Button type="submit" disabled={savingProfile}>{savingProfile ? 'Enregistrement…' : 'Enregistrer le profil'}</Button></div>}</form><form onSubmit={savePassword} className="h-fit rounded-2xl border bg-card p-6 shadow-sm"><h2 className="font-semibold">Sécurité</h2><p className="mt-1 text-sm text-muted-foreground">Modifiez votre mot de passe avec votre mot de passe actuel.</p><div className="mt-5 space-y-4"><div><Label>Mot de passe actuel</Label><Input className="mt-1" type="password" value={password.currentPassword} onChange={(event) => setPassword({ ...password, currentPassword: event.target.value })} required /></div><div><Label>Nouveau mot de passe</Label><Input className="mt-1" type="password" minLength={6} value={password.newPassword} onChange={(event) => setPassword({ ...password, newPassword: event.target.value })} required /></div><div><Label>Confirmer le mot de passe</Label><Input className="mt-1" type="password" minLength={6} value={password.confirmPassword} onChange={(event) => setPassword({ ...password, confirmPassword: event.target.value })} required /></div><Button type="submit" variant="outline" disabled={savingPassword}>{savingPassword ? 'Modification…' : 'Changer le mot de passe'}</Button></div></form></div></div>;
 }
 
 function Metric({ label, value, icon: Icon }: { label: string; value: string; icon: typeof Package }) { return <Card><CardContent className="flex items-center gap-4 p-5"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary"><Icon className="h-5 w-5" /></span><div><p className="text-2xl font-semibold">{value}</p><p className="text-xs text-muted-foreground">{label}</p></div></CardContent></Card>; }

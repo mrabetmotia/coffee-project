@@ -11,7 +11,7 @@ import { Table, THead, Th, Td } from '@/components/ui/table';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { num } from '@/lib/utils';
-import { ClientDetailSkeleton } from '@/components/ui/skeleton';
+import { ClientDetailSkeleton, TableSkeleton } from '@/components/ui/skeleton';
 
 type Client = {
   id: string;
@@ -53,43 +53,46 @@ export function ClientsPage() {
         <div className="relative flex-1"><Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /><Input id="client-search" className="pl-9" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Rechercher par nom, email ou téléphone" /></div>
         <div className="flex gap-2"><Button size="sm" variant={status === 'all' ? 'default' : 'outline'} onClick={() => setStatus('all')}>Tous</Button><Button size="sm" variant={status === 'active' ? 'default' : 'outline'} onClick={() => setStatus('active')}>Actifs</Button><Button size="sm" variant={status === 'inactive' ? 'default' : 'outline'} onClick={() => setStatus('inactive')}>Inactifs</Button></div>
       </section>
-      <section className="overflow-hidden rounded-2xl border bg-card shadow-sm"><Table>
-        <THead>
-          <tr>
-            <Th>Nom</Th>
-            <Th>Email</Th>
-            <Th>Téléphone</Th>
-            <Th>Commandes</Th>
-            <Th>Statut</Th>
-            <Th>Créé le</Th>
-            <Th>Actions</Th>
-          </tr>
-        </THead>
-        <tbody>
-          {isLoading ? <tr><Td colSpan={5}>Chargement…</Td></tr> : null}
-          {!isLoading && filtered.length === 0 ? <tr><Td colSpan={6}><div className="py-8 text-center text-sm text-muted-foreground">Aucun client trouvé.</div></Td></tr> : null}
-          {filtered.map((c) => (
-            <tr key={c.id}>
-              <Td>
-                <Link className="text-primary" to={`/admin/clients/${c.id}`}>
-                  {c.name}
-                </Link>
-              </Td>
-              <Td>{c.email ?? '—'}</Td>
-              <Td>{c.phone ?? '—'}</Td>
-              <Td>{c._count?.orders ?? 0}</Td>
-              <Td><Badge variant={c.isActive ? 'default' : 'outline'}>{c.isActive ? 'Actif' : 'Inactif'}</Badge></Td>
-              <Td>{new Date(c.createdAt).toLocaleDateString('fr-FR')}</Td>
-              <Td>
-                <div className="flex items-center gap-2">
-                  <Link to={`/admin/clients/${c.id}`}><Button size="sm" variant="outline">Voir</Button></Link>
-                  <Button size="sm" variant="ghost" disabled={statusMutation.isPending} onClick={() => statusMutation.mutate({ id: c.id, isActive: !c.isActive })}>{c.isActive ? 'Désactiver' : 'Activer'}</Button>
-                </div>
-              </Td>
+      {isLoading ? <TableSkeleton /> :
+      <section className="overflow-hidden rounded-2xl border bg-card shadow-sm">
+        <Table>
+          <THead>
+            <tr>
+              <Th>Nom</Th>
+              <Th>Email</Th>
+              <Th>Téléphone</Th>
+              <Th>Commandes</Th>
+              <Th>Statut</Th>
+              <Th>Créé le</Th>
+              <Th>Actions</Th>
             </tr>
-          ))}
-        </tbody>
-      </Table></section>
+          </THead>
+          <tbody>
+            {!isLoading && filtered.length === 0 ? <tr><Td colSpan={6}><div className="py-8 text-center text-sm text-muted-foreground">Aucun client trouvé.</div></Td></tr> : null}
+            {filtered.map((c) => (
+              <tr key={c.id}>
+                <Td>
+                  <Link className="text-primary" to={`/admin/clients/${c.id}`}>
+                    {c.name}
+                  </Link>
+                </Td>
+                <Td>{c.email ?? '—'}</Td>
+                <Td>{c.phone ?? '—'}</Td>
+                <Td>{c._count?.orders ?? 0}</Td>
+                <Td><Badge variant={c.isActive ? 'default' : 'outline'}>{c.isActive ? 'Actif' : 'Inactif'}</Badge></Td>
+                <Td>{new Date(c.createdAt).toLocaleDateString('fr-FR')}</Td>
+                <Td>
+                  <div className="flex items-center gap-2">
+                    <Link to={`/admin/clients/${c.id}`}><Button size="sm" variant="outline">Voir</Button></Link>
+                    <Button size="sm" variant="ghost" disabled={statusMutation.isPending} onClick={() => statusMutation.mutate({ id: c.id, isActive: !c.isActive })}>{c.isActive ? 'Désactiver' : 'Activer'}</Button>
+                  </div>
+                </Td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+      </section>
+      }
     </div>
   );
 }

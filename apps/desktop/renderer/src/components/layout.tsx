@@ -29,7 +29,7 @@ import {
   MessageSquareText,
 } from 'lucide-react';
 import { useTheme } from '@/lib/theme';
-import { api, getCurrentUser, setCurrentUser, setToken } from '@/lib/api';
+import { api, getCurrentUser, setCurrentUser, setToken, useCurrentUser } from '@/lib/api';
 import { getChatSocket, refreshChatSocketAuth } from '@/lib/chat';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/lib/i18n';
@@ -91,6 +91,7 @@ export function AppLayout({ role = 'ADMIN' }: { role?: 'ADMIN' | 'CLIENT' }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [desktopOpen, setDesktopOpen] = useState(true);
   const [unreadMessages, setUnreadMessages] = useState(0);
+  const currentUser = useCurrentUser();
   const { cart } = useCart();
   const productCount = Object.keys(cart).length;
   const nav = role === 'CLIENT' ? clientNav : adminNav;
@@ -175,8 +176,8 @@ export function AppLayout({ role = 'ADMIN' }: { role?: 'ADMIN' | 'CLIENT' }) {
         </nav>
         <div className="border-t border-white/10 px-4 py-4">
           <div className="flex items-center gap-3 rounded-xl bg-white/5 px-3 py-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20 text-xs font-semibold text-primary">{(getCurrentUser()?.name ?? (role === 'CLIENT' ? 'CL' : 'AD')).slice(0, 2).toUpperCase()}</div>
-            <div className="min-w-0 flex-1"><p className="truncate text-sm font-medium">{role === 'CLIENT' ? (getCurrentUser()?.name ?? 'Client') : 'Administrateur'}</p><p className="truncate text-[11px] text-sidebar-muted">{role === 'CLIENT' ? 'Compte client' : 'Compte local'}</p></div>
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20 text-xs font-semibold text-primary">{(currentUser?.name ?? (role === 'CLIENT' ? 'CL' : 'AD')).slice(0, 2).toUpperCase()}</div>
+            <div className="min-w-0 flex-1"><p className="truncate text-sm font-medium">{role === 'CLIENT' ? (currentUser?.name ?? 'Client') : 'Administrateur'}</p><p className="truncate text-[11px] text-sidebar-muted">{role === 'CLIENT' ? 'Compte client' : 'Compte local'}</p></div>
             <button onClick={logout} className="rounded-lg p-2 text-sidebar-muted transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground" aria-label={t('Se déconnecter')}><LogOut className="h-4 w-4" /></button>
           </div>
         </div>

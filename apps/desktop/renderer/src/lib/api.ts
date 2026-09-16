@@ -1,7 +1,30 @@
+import { useSyncExternalStore } from 'react';
+
 const TOKEN_KEY = 'cafestock-token';
 const USER_KEY = 'cafestock-user';
 
+export type CurrentUser = {
+  id?: string;
+  username?: string;
+  role?: string;
+  name?: string | null;
+  email?: string | null;
+  isActive?: boolean;
+  client?: { id: string; name: string; email: string | null; phone: string | null; address: string | null } | null;
+};
+
 let apiBase = import.meta.env.VITE_API_URL ?? 'http://127.0.0.1:47821/api';
+let currentUser: CurrentUser | null = readStoredUser();
+const userListeners = new Set<() => void>();
+
+function readStoredUser(): CurrentUser | null {
+  try {
+    const raw = localStorage.getItem(USER_KEY);
+    return raw ? JSON.parse(raw) as CurrentUser : null;
+  } catch {
+    return null;
+  }
+}
 
 export function setApiBase(url: string) {
   apiBase = url;
@@ -20,18 +43,26 @@ export function setToken(token: string | null) {
   else localStorage.removeItem(TOKEN_KEY);
 }
 
-export function getCurrentUser(): { id?: string; username?: string; role?: string; name?: string } | null {
-  try {
-    const raw = localStorage.getItem(USER_KEY);
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
+export function getCurrentUser(): CurrentUser | null {
+  return currentUser;
 }
 
-export function setCurrentUser(user: { id?: string; username?: string; role?: string; name?: string } | null) {
+export function setCurrentUser(user: CurrentUser | null) {
+  currentUser = user;
   if (user) localStorage.setItem(USER_KEY, JSON.stringify(user));
   else localStorage.removeItem(USER_KEY);
+  userListeners.forEach((listener) => listener());
+}
+
+export function useCurrentUser() {
+  return useSyncExternalStore(
+    (listener) => {
+      userListeners.add(listener);
+      return () => userListeners.delete(listener);
+    },
+    () => currentUser,
+    () => currentUser,
+  );
 }
 
 export function getCurrentRole(): string | null {
