@@ -220,6 +220,72 @@ export function SaleDetailSkeleton() {
   );
 }
 
+export function OrderDetailSkeleton() {
+  return (
+    <div className="space-y-6" aria-live="polite">
+      <div className="flex items-center justify-between gap-4">
+        <div className="space-y-2">
+          <Skeleton className="h-7 w-44" />
+          <Skeleton className="h-4 w-52" />
+        </div>
+        <Skeleton className="h-9 w-24 rounded-md" />
+      </div>
+
+      <div className="flex flex-wrap gap-3">
+        <Skeleton className="h-9 w-24 rounded-md" />
+        <Skeleton className="h-9 w-28 rounded-md" />
+        <Skeleton className="h-9 w-24 rounded-md" />
+      </div>
+
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-4 w-28" />
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-5 gap-2">
+            {Array.from({ length: 5 }).map((_, index) => (
+              <div key={index} className="space-y-2 text-center">
+                <Skeleton className="mx-auto h-9 w-9 rounded-full" />
+                <Skeleton className="mx-auto h-3 w-16" />
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-4 w-36" />
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <div key={index} className="flex items-center justify-between gap-4 border-b border-border/70 py-3 last:border-0">
+                <div className="min-w-0 flex-1 space-y-2">
+                  <Skeleton className="h-4 w-40" />
+                  <Skeleton className="h-3 w-28" />
+                </div>
+                <Skeleton className="h-4 w-20" />
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-3 w-32" />
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <Skeleton className="h-8 w-28" />
+            <Skeleton className="h-3 w-full" />
+            <Skeleton className="h-3 w-3/4" />
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
 export function ProductsPageSkeleton() {
   return (
     <div className="space-y-4" aria-live="polite">
