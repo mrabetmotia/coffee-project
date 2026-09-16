@@ -5,6 +5,7 @@ import { Toaster } from 'sonner';
 import { App } from './App';
 import { ThemeProvider } from './lib/theme';
 import { LanguageProvider } from './lib/i18n';
+import { CartProvider } from './lib/cart';
 import { setApiBase } from './lib/api';
 import './styles/globals.css';
 
@@ -18,10 +19,12 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <LanguageProvider>
       <ThemeProvider>
-        <QueryClientProvider client={queryClient}>
-          <App />
-          <Toaster position="top-right" richColors />
-        </QueryClientProvider>
+        <CartProvider>
+          <QueryClientProvider client={queryClient}>
+            <App />
+            <Toaster position="top-right" richColors />
+          </QueryClientProvider>
+        </CartProvider>
       </ThemeProvider>
     </LanguageProvider>
   </React.StrictMode>,

@@ -34,6 +34,7 @@ import { getChatSocket, refreshChatSocketAuth } from '@/lib/chat';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/lib/i18n';
 import { NotificationCenter } from '@/components/notification-center';
+import { useCart } from '@/lib/cart';
 
 const adminNav = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -90,6 +91,8 @@ export function AppLayout({ role = 'ADMIN' }: { role?: 'ADMIN' | 'CLIENT' }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [desktopOpen, setDesktopOpen] = useState(true);
   const [unreadMessages, setUnreadMessages] = useState(0);
+  const { cart } = useCart();
+  const productCount = Object.keys(cart).length;
   const nav = role === 'CLIENT' ? clientNav : adminNav;
   const currentLabel = nav
     .flatMap((item) => ('children' in item ? item.children : [item]))
@@ -166,7 +169,7 @@ export function AppLayout({ role = 'ADMIN' }: { role?: 'ADMIN' | 'CLIENT' }) {
                 ))}
               </div>
             ) : (
-              <Item key={item.to} to={item.to} label={t(item.label)} icon={item.icon} onClick={closeMobile} badge={item.to.includes('/chat') && unreadMessages > 0 ? unreadMessages : undefined} />
+              <Item key={`${item.to}-${item.to === '/client/cart' ? productCount : item.to.includes('/chat') ? unreadMessages : 0}`} to={item.to} label={t(item.label)} icon={item.icon} onClick={closeMobile} badge={item.to.includes('/chat') && unreadMessages > 0 ? unreadMessages : item.to === '/client/cart' && productCount > 0 ? productCount : undefined} />
             ),
           )}
         </nav>
@@ -245,7 +248,7 @@ function Item({
     >
       <Icon className="h-4 w-4" />
       <span className="min-w-0 flex-1 truncate">{label}</span>
-      {badge ? <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground">{badge > 9 ? '9+' : badge}</span> : null}
+      {badge ? <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground">{badge}</span> : null}
     </NavLink>
   );
 }
